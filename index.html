@@ -19,7 +19,22 @@
         <h1>今日の予定</h1>
       </div>
 
-      <p id="todayDate" class="date"></p>
+      <div class="date-navigation">
+
+        <button id="prevDateButton" class="date-button">
+            ←
+        </button>
+
+        <button id="todayButton" class="today-button">
+            今日
+        </button>
+
+        <span id="todayDate" class="date"></span>
+
+        <button id="nextDateButton" class="date-button">
+            →
+        </button>
+      </div>
     </header>
 
 
@@ -36,36 +51,62 @@
 
 
     <!-- 実績 -->
-    <section class="card result-card">
+<section class="card result-card">
 
-      <h2>今日の実績</h2>
+  <h2>今日の実績</h2>
 
-      <div class="result-row">
-        <span>今日の起床</span>
-        <strong id="wakeResult">—</strong>
-      </div>
 
-      <div class="result-row">
-        <span>今日の就寝</span>
-        <strong id="sleepResult">—</strong>
-      </div>
+  <div class="result-row result-time-row">
 
-      <div class="result-row">
-        <span>勉強</span>
-        <strong id="studyResult">0分</strong>
-      </div>
+    <span>今日の起床</span>
 
-      <div class="result-row">
-        <span>イラスト</span>
-        <strong id="illustrationResult">0分</strong>
-      </div>
+    <input
+      type="time"
+      id="wakeTimeInput"
+      class="result-time-input"
+    >
 
-      <div class="result-row achievement">
-        <span>達成</span>
-        <strong id="achievementResult">0 / 0</strong>
-      </div>
+  </div>
 
-    </section>
+
+  <div class="result-row result-time-row">
+
+    <span>今日の就寝</span>
+
+    <input
+      type="time"
+      id="sleepTimeInput"
+      class="result-time-input"
+    >
+
+  </div>
+
+
+  <div
+    id="activityResults"
+    class="activity-results"
+  ></div>
+
+
+  <button
+    id="addActivityButton"
+    class="add-activity-button"
+  >
+    ＋ 実績を追加
+  </button>
+
+
+  <div class="result-row achievement">
+
+    <span>達成</span>
+
+    <strong id="achievementResult">
+      0 / 0
+    </strong>
+
+  </div>
+
+</section>
 
   </main>
 
