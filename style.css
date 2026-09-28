@@ -1,0 +1,188 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+
+  font-family:
+    Inter,
+    "Noto Sans JP",
+    sans-serif;
+
+  background: #111318;
+  color: #f5f5f5;
+}
+
+.app {
+  width: min(92%, 620px);
+
+  margin: 0 auto;
+  padding: 50px 0;
+}
+
+.header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+
+  margin-bottom: 20px;
+}
+
+.sub-title {
+  margin: 0;
+
+  color: #717784;
+  font-size: 11px;
+  letter-spacing: 2px;
+}
+
+h1 {
+  margin: 5px 0 0;
+
+  font-size: 28px;
+}
+
+.date {
+  color: #8e94a0;
+  font-size: 14px;
+}
+
+.card {
+  padding: 22px;
+
+  background: #191c22;
+
+  border: 1px solid #252932;
+  border-radius: 18px;
+
+  margin-bottom: 20px;
+}
+
+.schedule-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.schedule-item {
+  display: grid;
+
+  grid-template-columns:
+    38px
+    60px
+    1fr
+    60px;
+
+  align-items: center;
+
+  min-height: 62px;
+
+  border-bottom: 1px solid #282c34;
+}
+
+.schedule-item:last-child {
+  border-bottom: none;
+}
+
+.check-button {
+  width: 28px;
+  height: 28px;
+
+  border: 2px solid #555d6b;
+  border-radius: 50%;
+
+  background: transparent;
+  color: white;
+
+  cursor: pointer;
+
+  transition: 0.2s;
+}
+
+.check-button:hover {
+  border-color: #ffffff;
+}
+
+.schedule-item.completed .check-button {
+  background: #ffffff;
+  color: #111318;
+
+  border-color: #ffffff;
+}
+
+.schedule-item.completed .task-name {
+  color: #777d87;
+
+  text-decoration: line-through;
+}
+
+.plan-time {
+  color: #858b96;
+
+  font-size: 14px;
+}
+
+.task-name {
+  font-size: 15px;
+
+  transition: 0.2s;
+}
+
+.actual-time {
+  text-align: right;
+
+  color: #686e79;
+
+  font-size: 13px;
+}
+
+.add-button {
+  width: 100%;
+
+  margin-top: 16px;
+  padding: 13px;
+
+  background: #232730;
+
+  color: #aeb4c0;
+
+  border: none;
+  border-radius: 10px;
+
+  cursor: pointer;
+
+  transition: 0.2s;
+}
+
+.add-button:hover {
+  background: #2c313c;
+  color: white;
+}
+
+.result-card h2 {
+  margin-top: 0;
+  margin-bottom: 20px;
+
+  font-size: 18px;
+}
+
+.result-row {
+  display: flex;
+  justify-content: space-between;
+
+  padding: 10px 0;
+
+  color: #979da8;
+}
+
+.result-row strong {
+  color: white;
+}
+
+.achievement {
+  margin-top: 10px;
+  padding-top: 18px;
+
+  border-top: 1px solid #2b2f38;
+}

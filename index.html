@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>LifeLog</title>
+
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+  <main class="app">
+
+    <header class="header">
+      <div>
+        <p class="sub-title">DAILY TRACKER</p>
+        <h1>今日の予定</h1>
+      </div>
+
+      <p id="todayDate" class="date"></p>
+    </header>
+
+
+    <!-- 予定一覧 -->
+    <section class="card">
+
+      <div id="scheduleList" class="schedule-list"></div>
+
+      <button id="addButton" class="add-button">
+        ＋ 予定を追加
+      </button>
+
+    </section>
+
+
+    <!-- 実績 -->
+    <section class="card result-card">
+
+      <h2>今日の実績</h2>
+
+      <div class="result-row">
+        <span>今日の起床</span>
+        <strong id="wakeResult">—</strong>
+      </div>
+
+      <div class="result-row">
+        <span>今日の就寝</span>
+        <strong id="sleepResult">—</strong>
+      </div>
+
+      <div class="result-row">
+        <span>勉強</span>
+        <strong id="studyResult">0分</strong>
+      </div>
+
+      <div class="result-row">
+        <span>イラスト</span>
+        <strong id="illustrationResult">0分</strong>
+      </div>
+
+      <div class="result-row achievement">
+        <span>達成</span>
+        <strong id="achievementResult">0 / 0</strong>
+      </div>
+
+    </section>
+
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
