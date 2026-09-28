@@ -15,6 +15,9 @@
     rel="stylesheet"
     href="style.css"
   >
+  <link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#181b20">
+<link rel="apple-touch-icon" href="icon-192.png">
 </head>
 
 
@@ -220,6 +223,17 @@
 
   <!-- JavaScriptは最後に読み込む -->
   <script src="script.js"></script>
+  <script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker
+        .register("./sw.js")
+        .catch(error => {
+          console.error("Service Worker登録失敗:", error);
+        });
+    });
+  }
+</script>
 
 </body>
 
