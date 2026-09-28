@@ -2194,6 +2194,334 @@ document
 
   );
 
+  // --------------------------------
+// バックアップ作成
+// --------------------------------
+
+function exportBackup() {
+
+  const backupData = {
+
+    app:
+      "LifeLog",
+
+    version:
+      "1.1.0",
+
+    exportedAt:
+      new Date().toISOString(),
+
+    lifeLogData:
+      allData,
+
+    lifeLogResultData:
+      allResultData
+
+  };
+
+
+  const json =
+    JSON.stringify(
+      backupData,
+      null,
+      2
+    );
+
+
+  const blob =
+    new Blob(
+      [json],
+      {
+        type:
+          "application/json"
+      }
+    );
+
+
+  const url =
+    URL.createObjectURL(
+      blob
+    );
+
+
+  const link =
+    document.createElement(
+      "a"
+    );
+
+
+  const now =
+    new Date();
+
+
+  const year =
+    now.getFullYear();
+
+
+  const month =
+    String(
+      now.getMonth() + 1
+    ).padStart(
+      2,
+      "0"
+    );
+
+
+  const day =
+    String(
+      now.getDate()
+    ).padStart(
+      2,
+      "0"
+    );
+
+
+  link.href =
+    url;
+
+
+  link.download =
+    `LifeLog-backup-${year}-${month}-${day}.json`;
+
+
+  document.body.appendChild(
+    link
+  );
+
+
+  link.click();
+
+
+  link.remove();
+
+
+  URL.revokeObjectURL(
+    url
+  );
+
+}
+
+// --------------------------------
+// バックアップ復元
+// --------------------------------
+
+function importBackup(
+  file
+) {
+
+  const reader =
+    new FileReader();
+
+
+  reader.onload =
+    event => {
+
+      try {
+
+        const backup =
+          JSON.parse(
+            event.target.result
+          );
+
+
+        // --------------------------
+        // LifeLogのバックアップか確認
+        // --------------------------
+
+        if (
+          backup.app !==
+          "LifeLog"
+        ) {
+
+          alert(
+            "LifeLogのバックアップファイルではありません。"
+          );
+
+          return;
+
+        }
+
+
+        if (
+          !backup.lifeLogData ||
+          !backup.lifeLogResultData
+        ) {
+
+          alert(
+            "バックアップデータが正しくありません。"
+          );
+
+          return;
+
+        }
+
+
+        const result =
+          confirm(
+            "現在のLifeLogデータをバックアップの内容で置き換えます。\n\n復元しますか？"
+          );
+
+
+        if (!result) {
+
+          return;
+
+        }
+
+
+        localStorage.setItem(
+
+          STORAGE_KEY,
+
+          JSON.stringify(
+            backup.lifeLogData
+          )
+
+        );
+
+
+        localStorage.setItem(
+
+          RESULT_STORAGE_KEY,
+
+          JSON.stringify(
+            backup.lifeLogResultData
+          )
+
+        );
+
+
+        alert(
+          "バックアップを復元しました。"
+        );
+
+
+        // 新しいデータで再読み込み
+        location.reload();
+
+      } catch (error) {
+
+        console.error(
+          error
+        );
+
+
+        alert(
+          "JSONファイルを読み込めませんでした。"
+        );
+
+      }
+
+    };
+
+
+  reader.readAsText(
+    file
+  );
+
+}
+
+// --------------------------------
+// バックアップボタン
+// --------------------------------
+
+const exportBackupButton =
+  document.getElementById(
+    "exportBackupButton"
+  );
+
+
+if (
+  exportBackupButton
+) {
+
+  exportBackupButton
+    .addEventListener(
+
+      "click",
+
+      () => {
+
+        exportBackup();
+
+      }
+
+    );
+
+}
+
+
+// --------------------------------
+// 復元ボタン
+// --------------------------------
+
+const importBackupButton =
+  document.getElementById(
+    "importBackupButton"
+  );
+
+
+const backupFileInput =
+  document.getElementById(
+    "backupFileInput"
+  );
+
+
+if (
+  importBackupButton &&
+  backupFileInput
+) {
+
+  importBackupButton
+    .addEventListener(
+
+      "click",
+
+      () => {
+
+        backupFileInput.click();
+
+      }
+
+    );
+
+
+  backupFileInput
+    .addEventListener(
+
+      "change",
+
+      event => {
+
+        const file =
+          event.target.files[0];
+
+
+        if (!file) {
+
+          return;
+
+        }
+
+
+        importBackup(
+          file
+        );
+
+
+        /*
+          同じファイルをもう一度
+          選べるようにリセット
+        */
+        event.target.value =
+          "";
+
+      }
+
+    );
+
+}
+
 
 // --------------------------------
 // 最初の表示

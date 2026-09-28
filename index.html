@@ -1,115 +1,226 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
 
   <title>LifeLog</title>
 
-  <link rel="stylesheet" href="style.css">
+  <link
+    rel="stylesheet"
+    href="style.css"
+  >
 </head>
+
 
 <body>
 
   <main class="app">
 
+
+    <!-- ヘッダー -->
     <header class="header">
+
       <div>
-        <p class="sub-title">DAILY TRACKER</p>
-        <h1>今日の予定</h1>
+
+        <p class="sub-title">
+          DAILY TRACKER
+        </p>
+
+        <h1>
+          今日の予定
+        </h1>
+
       </div>
+
 
       <div class="date-navigation">
 
-        <button id="prevDateButton" class="date-button">
-            ←
+        <button
+          id="prevDateButton"
+          class="date-button"
+        >
+          ←
         </button>
 
-        <button id="todayButton" class="today-button">
-            今日
+
+        <button
+          id="todayButton"
+          class="today-button"
+        >
+          今日
         </button>
 
-        <span id="todayDate" class="date"></span>
 
-        <button id="nextDateButton" class="date-button">
-            →
+        <span
+          id="todayDate"
+          class="date"
+        ></span>
+
+
+        <button
+          id="nextDateButton"
+          class="date-button"
+        >
+          →
         </button>
+
       </div>
+
     </header>
+
 
 
     <!-- 予定一覧 -->
     <section class="card">
 
-      <div id="scheduleList" class="schedule-list"></div>
+      <div
+        id="scheduleList"
+        class="schedule-list"
+      ></div>
 
-      <button id="addButton" class="add-button">
+
+      <button
+        id="addButton"
+        class="add-button"
+      >
         ＋ 予定を追加
       </button>
 
     </section>
 
 
+
     <!-- 実績 -->
-<section class="card result-card">
+    <section class="card result-card">
 
-  <h2>今日の実績</h2>
-
-
-  <div class="result-row result-time-row">
-
-    <span>今日の起床</span>
-
-    <input
-      type="time"
-      id="wakeTimeInput"
-      class="result-time-input"
-    >
-
-  </div>
+      <h2>
+        今日の実績
+      </h2>
 
 
-  <div class="result-row result-time-row">
+      <!-- 起床 -->
+      <div class="result-row result-time-row">
 
-    <span>今日の就寝</span>
-
-    <input
-      type="time"
-      id="sleepTimeInput"
-      class="result-time-input"
-    >
-
-  </div>
+        <span>
+          今日の起床
+        </span>
 
 
-  <div
-    id="activityResults"
-    class="activity-results"
-  ></div>
+        <input
+          type="time"
+          id="wakeTimeInput"
+          class="result-time-input"
+        >
+
+      </div>
 
 
-  <button
-    id="addActivityButton"
-    class="add-activity-button"
-  >
-    ＋ 実績を追加
-  </button>
+      <!-- 就寝 -->
+      <div class="result-row result-time-row">
+
+        <span>
+          今日の就寝
+        </span>
 
 
-  <div class="result-row achievement">
+        <input
+          type="time"
+          id="sleepTimeInput"
+          class="result-time-input"
+        >
 
-    <span>達成</span>
+      </div>
 
-    <strong id="achievementResult">
-      0 / 0
-    </strong>
 
-  </div>
+      <!-- 実績一覧 -->
+      <div
+        id="activityResults"
+        class="activity-results"
+      ></div>
 
-</section>
+
+      <!-- 実績追加 -->
+      <button
+        id="addActivityButton"
+        class="add-activity-button"
+      >
+        ＋ 実績を追加
+      </button>
+
+
+      <!-- 達成数 -->
+      <div class="result-row achievement">
+
+        <span>
+          達成
+        </span>
+
+
+        <strong id="achievementResult">
+          0 / 0
+        </strong>
+
+      </div>
+
+    </section>
+
+
+
+    <!-- データ管理 -->
+    <section class="card backup-card">
+
+      <h2>
+        データ管理
+      </h2>
+
+
+      <p class="backup-description">
+        予定と実績をJSONファイルとして保存できます。
+      </p>
+
+
+      <div class="backup-buttons">
+
+        <button
+          id="exportBackupButton"
+          class="backup-button"
+        >
+          バックアップ
+        </button>
+
+
+        <button
+          id="importBackupButton"
+          class="backup-button"
+        >
+          復元
+        </button>
+
+      </div>
+
+
+      <input
+        type="file"
+        id="backupFileInput"
+        accept=".json,application/json"
+        hidden
+      >
+
+    </section>
+
 
   </main>
 
+
+  <!-- JavaScriptは最後に読み込む -->
   <script src="script.js"></script>
+
 </body>
+
 </html>

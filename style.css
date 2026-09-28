@@ -454,3 +454,55 @@ h1 {
 
   color: white;
 }
+
+.backup-card h2 {
+  margin-top: 0;
+  margin-bottom: 8px;
+
+  font-size: 18px;
+}
+
+
+.backup-description {
+  margin: 0 0 16px;
+
+  color: #8e94a0;
+
+  font-size: 13px;
+}
+
+
+.backup-buttons {
+  display: grid;
+
+  grid-template-columns:
+    1fr
+    1fr;
+
+  gap: 10px;
+}
+
+
+.backup-button {
+  padding: 12px;
+
+  background: #232730;
+
+  border: none;
+  border-radius: 10px;
+
+  color: #c2c7d0;
+
+  font-size: 14px;
+
+  cursor: pointer;
+
+  transition: 0.2s;
+}
+
+
+.backup-button:hover {
+  background: #2c313c;
+
+  color: white;
+}
