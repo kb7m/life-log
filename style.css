@@ -506,3 +506,98 @@ h1 {
 
   color: white;
 }
+
+/* --------------------------------
+   週間まとめ
+-------------------------------- */
+
+.weekly-card h2 {
+  margin: 0;
+
+  font-size: 18px;
+}
+
+.weekly-header {
+  display: flex;
+
+  justify-content: space-between;
+  align-items: center;
+
+  margin-bottom: 20px;
+}
+
+.weekly-date-range {
+  color: #717784;
+  font-size: 13px;
+
+}
+
+.weekly-sutudy {
+  display: flex;
+
+  justify-content: space-between;
+  align-items: center;
+
+  padding: 14px 0;
+}
+
+.weekly-label {
+  color: #979da8;
+}
+
+.weekly-study strong {
+  color: white;
+
+  font-size: 22px;
+}
+
+/* --------------------------------
+   週間実績
+-------------------------------- */
+
+.weekly-activity-summary {
+  display: flex;
+  flex-direction: column;
+}
+
+
+.weekly-activity-row {
+  display: flex;
+
+  justify-content: space-between;
+  align-items: center;
+
+  padding: 12px 0;
+
+  border-bottom: 1px solid #282c34;
+}
+
+
+.weekly-activity-row:last-child {
+  border-bottom: none;
+}
+
+
+.weekly-activity-name {
+  color: #979da8;
+
+  font-size: 14px;
+}
+
+
+.weekly-activity-time {
+  color: white;
+
+  font-size: 16px;
+}
+
+
+.weekly-empty {
+  margin: 0;
+
+  padding: 12px 0;
+
+  color: #717784;
+
+  font-size: 13px;
+}

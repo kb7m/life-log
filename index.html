@@ -15,9 +15,21 @@
     rel="stylesheet"
     href="style.css"
   >
-  <link rel="manifest" href="manifest.webmanifest">
-<meta name="theme-color" content="#181b20">
-<link rel="apple-touch-icon" href="icon-192.png">
+
+  <link
+    rel="manifest"
+    href="manifest.webmanifest"
+  >
+
+  <meta
+    name="theme-color"
+    content="#181b20"
+  >
+
+  <link
+    rel="apple-touch-icon"
+    href="icon-192.png"
+  >
 </head>
 
 
@@ -99,7 +111,7 @@
 
 
 
-    <!-- 実績 -->
+    <!-- 今日の実績 -->
     <section class="card result-card">
 
       <h2>
@@ -175,6 +187,34 @@
 
 
 
+    <!-- 週間まとめ -->
+    <section class="card weekly-card">
+
+      <div class="weekly-header">
+
+        <h2>
+          週間まとめ
+        </h2>
+
+        <span
+          id="weeklyDateRange"
+          class="weekly-date-range"
+        ></span>
+
+      </div>
+
+
+      <div
+      id="weeklyActivitySummary"
+      class="weekly-activity-summary"
+      ></div>
+      
+  
+
+    </section>
+
+
+
     <!-- データ管理 -->
     <section class="card backup-card">
 
@@ -221,19 +261,36 @@
   </main>
 
 
-  <!-- JavaScriptは最後に読み込む -->
+  <!-- LifeLog -->
   <script src="script.js"></script>
+
+
+  <!-- PWA -->
   <script>
-  if ("serviceWorker" in navigator) {
-    window.addEventListener("load", () => {
-      navigator.serviceWorker
-        .register("./sw.js")
-        .catch(error => {
-          console.error("Service Worker登録失敗:", error);
-        });
-    });
-  }
-</script>
+
+    if ("serviceWorker" in navigator) {
+
+      window.addEventListener(
+        "load",
+        () => {
+
+          navigator.serviceWorker
+            .register("./sw.js")
+            .catch(error => {
+
+              console.error(
+                "Service Worker登録失敗:",
+                error
+              );
+
+            });
+
+        }
+      );
+
+    }
+
+  </script>
 
 </body>
 
