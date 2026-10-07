@@ -186,6 +186,7 @@
     </section>
 
 
+
     <!-- 今日の支出 -->
     <section class="card expense-card">
 
@@ -193,10 +194,29 @@
         今日の支出
       </h2>
 
+
       <div
         id="expenseResults"
         class="expense-results"
       ></div>
+
+
+      <div class="expense-total-row">
+
+        <span>
+          今日の合計
+        </span>
+
+
+        <strong
+          id="dailyExpenseTotal"
+          class="expense-total"
+        >
+          0円
+        </strong>
+
+      </div>
+
 
       <button
         id="addExpenseButton"
@@ -218,6 +238,7 @@
           週間まとめ
         </h2>
 
+
         <span
           id="weeklyDateRange"
           class="weekly-date-range"
@@ -227,11 +248,34 @@
 
 
       <div
-      id="weeklyActivitySummary"
-      class="weekly-activity-summary"
+        id="weeklyActivitySummary"
+        class="weekly-activity-summary"
       ></div>
       
+      <div class="weekly-expense-section">
+      
+        <div class="weekly-expense-total-row">
+
+          <span>
+            週間支出
+          </span>
+
+          <strong id="weeklyExpenseTotal">
+            0円
+          </strong>
+
+        </div>
+
+
+        <div
+    
+        id="weeklyExpenseSummary"
+    
+        class="weekly-expense-summary"
   
+        ></div>
+
+      </div>
 
     </section>
 

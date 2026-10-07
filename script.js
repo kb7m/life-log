@@ -984,6 +984,8 @@ function renderSchedules() {
 
   updateWeeklySummary();
 
+  
+
 }
 
 
@@ -1483,6 +1485,250 @@ function calculateWeeklyActivityTotals(
 
 
   return totals;
+
+}
+
+// --------------------------------
+// 週間支出を集計
+// --------------------------------
+
+function calculateWeeklyExpenseSummary(
+  dateKey
+) {
+
+  const monday =
+    getMondayOfWeek(
+      dateKey
+    );
+
+
+  let total =
+    0;
+
+
+  const breakdown =
+    {};
+
+
+  for (
+    let i = 0;
+    i < 7;
+    i++
+  ) {
+
+    const date =
+      new Date(
+        monday
+      );
+
+
+    date.setDate(
+      monday.getDate() +
+      i
+    );
+
+
+    const key =
+      formatDateKey(
+        date
+      );
+
+
+    const result =
+      allResultData[
+        key
+      ];
+
+
+    if (
+      !result ||
+      !Array.isArray(
+        result.expenses
+      )
+    ) {
+
+      continue;
+
+    }
+
+
+    result.expenses.forEach(
+      expense => {
+
+        const name =
+          String(
+            expense.name ||
+            ""
+          ).trim();
+
+
+        const amount =
+          Number(
+            expense.amount
+          ) || 0;
+
+
+        if (
+          name === "" ||
+          amount <= 0
+        ) {
+
+          return;
+
+        }
+
+
+        total +=
+          amount;
+
+
+        if (
+          !breakdown[
+            name
+          ]
+        ) {
+
+          breakdown[
+            name
+          ] =
+            0;
+
+        }
+
+
+        breakdown[
+          name
+        ] +=
+          amount;
+
+      }
+    );
+
+  }
+
+
+  return {
+
+    total:
+      total,
+
+    breakdown:
+      breakdown
+
+  };
+
+}
+
+// --------------------------------
+// 週間支出表示
+// --------------------------------
+
+function updateWeeklyExpenseSummary() {
+
+  const totalElement =
+    document.getElementById(
+      "weeklyExpenseTotal"
+    );
+
+
+  const container =
+    document.getElementById(
+      "weeklyExpenseSummary"
+    );
+
+
+  if (
+    !totalElement ||
+    !container
+  ) {
+
+    return;
+
+  }
+
+
+  const summary =
+    calculateWeeklyExpenseSummary(
+      selectedDateKey
+    );
+
+
+  totalElement.textContent =
+    `${summary.total.toLocaleString()}円`;
+
+
+  container.innerHTML =
+    "";
+
+
+  const expenses =
+    Object.entries(
+      summary.breakdown
+    );
+
+
+  expenses.sort(
+    (a, b) =>
+      b[1] - a[1]
+  );
+
+
+  if (
+    expenses.length === 0
+  ) {
+
+    container.innerHTML = `
+      <p class="weekly-expense-empty">
+        まだ支出がありません
+      </p>
+    `;
+
+    return;
+
+  }
+
+
+  expenses.forEach(
+    (
+      [
+        name,
+        amount
+      ]
+    ) => {
+
+      const row =
+        document.createElement(
+          "div"
+        );
+
+
+      row.className =
+        "weekly-expense-row";
+
+
+      row.innerHTML = `
+
+        <span
+          class="weekly-expense-name"
+        >
+          ${escapeHtml(name)}
+        </span>
+
+        <strong
+          class="weekly-expense-amount"
+        >
+          ${amount.toLocaleString()}円
+        </strong>
+
+      `;
+
+
+      container.appendChild(
+        row
+      );
+
+    }
+  );
 
 }
 
@@ -2945,6 +3191,51 @@ if (
 }
 
 // --------------------------------
+// 1日の支出合計
+// --------------------------------
+
+function updateDailyExpenseTotal() {
+
+  const totalElement =
+    document.getElementById(
+      "dailyExpenseTotal"
+    );
+
+
+  if (!totalElement) {
+
+    return;
+
+  }
+
+
+  const total =
+    dailyResults.expenses.reduce(
+      (
+        sum,
+        expense
+      ) => {
+
+        return (
+          sum +
+          (
+            Number(
+              expense.amount
+            ) || 0
+          )
+        );
+
+      },
+      0
+    );
+
+
+  totalElement.textContent =
+    `${total.toLocaleString()}円`;
+
+}
+
+// --------------------------------
 // 支出一覧表示
 // --------------------------------
 
@@ -3017,6 +3308,12 @@ function renderExpenseResults() {
 
     }
   );
+
+  updateDailyExpenseTotal();
+
+  updateWeeklyExpenseSummary();
+
+  
 
 }
 
@@ -3286,9 +3583,13 @@ if (
             "name",
             event.target.value
           );
+          
+          renderExpenseResults();
+
 
         }
 
+        
 
         if (
           event.target.classList.contains(

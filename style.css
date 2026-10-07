@@ -732,3 +732,106 @@ h1 {
 
   color: white;
 }
+
+/* --------------------------------
+   支出合計
+-------------------------------- */
+
+.expense-total-row {
+  display: flex;
+
+  justify-content: space-between;
+  align-items: center;
+
+  margin-top: 16px;
+  padding-top: 16px;
+
+  border-top: 1px solid #2b2f38;
+
+  color: #979da8;
+}
+
+
+.expense-total {
+  color: white;
+
+  font-size: 18px;
+}
+
+/* --------------------------------
+   週間支出
+-------------------------------- */
+
+.weekly-expense-section {
+  margin-top: 18px;
+  padding-top: 18px;
+
+  border-top: 1px solid #2b2f38;
+}
+
+
+.weekly-expense-total-row {
+  display: flex;
+
+  justify-content: space-between;
+  align-items: center;
+
+  margin-bottom: 10px;
+
+  color: #979da8;
+}
+
+
+.weekly-expense-total-row strong {
+  color: white;
+
+  font-size: 18px;
+}
+
+
+.weekly-expense-summary {
+  display: flex;
+  flex-direction: column;
+}
+
+
+.weekly-expense-row {
+  display: flex;
+
+  justify-content: space-between;
+  align-items: center;
+
+  padding: 10px 0;
+
+  border-bottom: 1px solid #282c34;
+}
+
+
+.weekly-expense-row:last-child {
+  border-bottom: none;
+}
+
+
+.weekly-expense-name {
+  color: #979da8;
+
+  font-size: 14px;
+}
+
+
+.weekly-expense-amount {
+  color: white;
+
+  font-size: 14px;
+}
+
+
+.weekly-expense-empty {
+  margin: 0;
+
+  padding: 10px 0;
+
+  color: #717784;
+
+  font-size: 13px;
+}
