@@ -214,7 +214,9 @@ function createDefaultDailyResults() {
     sleepTime: "",
 
     activities:
-      createDefaultActivityResults()
+      createDefaultActivityResults(),
+
+    expenses: []
 
   };
 
@@ -621,6 +623,22 @@ function loadResultsForDate(
   }
 
 
+  // --------------------------------
+  // 支出データがない旧データへの対応
+  // --------------------------------
+
+  if (
+    !Array.isArray(
+      data.expenses
+    )
+  ) {
+
+    data.expenses =
+      [];
+
+  }
+
+
   allResultData[
     dateKey
   ] =
@@ -633,7 +651,6 @@ function loadResultsForDate(
   return data;
 
 }
-
 
 // --------------------------------
 // 現在の日付データを読み込む
@@ -960,6 +977,8 @@ function renderSchedules() {
   updateResults();
 
   renderActivityResults();
+
+  renderExpenseResults();
 
   updateDate();
 
