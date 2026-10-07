@@ -2944,6 +2944,439 @@ if (
 
 }
 
+// --------------------------------
+// 支出一覧表示
+// --------------------------------
+
+function renderExpenseResults() {
+
+  const container =
+    document.getElementById(
+      "expenseResults"
+    );
+
+
+  if (!container) {
+
+    return;
+
+  }
+
+
+  container.innerHTML =
+    "";
+
+
+  dailyResults.expenses.forEach(
+    expense => {
+
+      const row =
+        document.createElement(
+          "div"
+        );
+
+
+      row.className =
+        "expense-row";
+
+
+      row.innerHTML = `
+
+        <input
+          type="text"
+          class="expense-name-input"
+          data-id="${expense.id}"
+          value="${escapeHtml(expense.name)}"
+        >
+
+        <input
+          type="number"
+          class="expense-amount-input"
+          data-id="${expense.id}"
+          value="${expense.amount}"
+          min="0"
+        >
+
+        <span class="expense-yen-label">
+          円
+        </span>
+
+        <button
+          class="expense-delete-button"
+          data-id="${expense.id}"
+        >
+          ×
+        </button>
+
+      `;
+
+
+      container.appendChild(
+        row
+      );
+
+    }
+  );
+
+}
+
+
+// --------------------------------
+// 支出追加
+// --------------------------------
+
+function addExpense() {
+
+  const name =
+    prompt(
+      "何に使いましたか？"
+    );
+
+
+  if (
+    name === null
+  ) {
+
+    return;
+
+  }
+
+
+  const trimmedName =
+    name.trim();
+
+
+  if (
+    trimmedName === ""
+  ) {
+
+    alert(
+      "支出名を入力してください"
+    );
+
+    return;
+
+  }
+
+
+  const amountInput =
+    prompt(
+      "何円使いましたか？",
+      "0"
+    );
+
+
+  if (
+    amountInput === null
+  ) {
+
+    return;
+
+  }
+
+
+  let amount =
+    Number(
+      amountInput
+    );
+
+
+  if (
+    Number.isNaN(amount) ||
+    amount < 0
+  ) {
+
+    alert(
+      "正しい金額を入力してください"
+    );
+
+    return;
+
+  }
+
+
+  amount =
+    Math.round(
+      amount
+    );
+
+
+  const ids =
+    dailyResults.expenses.map(
+      expense =>
+        Number(
+          expense.id
+        ) || 0
+    );
+
+
+  const maxId =
+    ids.length > 0
+      ? Math.max(...ids)
+      : 0;
+
+
+  dailyResults.expenses.push({
+
+    id:
+      maxId + 1,
+
+    name:
+      trimmedName,
+
+    amount:
+      amount
+
+  });
+
+
+  saveDailyResults();
+
+  renderExpenseResults();
+
+}
+
+
+// --------------------------------
+// 支出削除
+// --------------------------------
+
+function deleteExpense(
+  id
+) {
+
+  dailyResults.expenses =
+    dailyResults.expenses.filter(
+      expense =>
+        expense.id !== id
+    );
+
+
+  saveDailyResults();
+
+  renderExpenseResults();
+
+}
+
+
+// --------------------------------
+// 支出変更
+// --------------------------------
+
+function updateExpense(
+  id,
+  type,
+  value
+) {
+
+  const expense =
+    dailyResults.expenses.find(
+      expense =>
+        expense.id === id
+    );
+
+
+  if (!expense) {
+
+    return;
+
+  }
+
+
+  if (
+    type === "name"
+  ) {
+
+    const newName =
+      value.trim();
+
+
+    if (
+      newName === ""
+    ) {
+
+      renderExpenseResults();
+
+      return;
+
+    }
+
+
+    expense.name =
+      newName;
+
+  }
+
+
+  if (
+    type === "amount"
+  ) {
+
+    let amount =
+      Number(
+        value
+      );
+
+
+    if (
+      Number.isNaN(amount) ||
+      amount < 0
+    ) {
+
+      amount =
+        0;
+
+    }
+
+
+    expense.amount =
+      Math.round(
+        amount
+      );
+
+  }
+
+
+  saveDailyResults();
+
+}
+
+// --------------------------------
+// 支出操作
+// --------------------------------
+
+const expenseResultsElement =
+  document.getElementById(
+    "expenseResults"
+  );
+
+
+if (
+  expenseResultsElement
+) {
+
+  expenseResultsElement
+    .addEventListener(
+
+      "change",
+
+      event => {
+
+        const id =
+          Number(
+            event.target.dataset.id
+          );
+
+
+        if (!id) {
+
+          return;
+
+        }
+
+
+        if (
+          event.target.classList.contains(
+            "expense-name-input"
+          )
+        ) {
+
+          updateExpense(
+            id,
+            "name",
+            event.target.value
+          );
+
+        }
+
+
+        if (
+          event.target.classList.contains(
+            "expense-amount-input"
+          )
+        ) {
+
+          updateExpense(
+            id,
+            "amount",
+            event.target.value
+          );
+
+          renderExpenseResults();
+
+        }
+
+      }
+
+    );
+
+
+  expenseResultsElement
+    .addEventListener(
+
+      "click",
+
+      event => {
+
+        const button =
+          event.target.closest(
+            ".expense-delete-button"
+          );
+
+
+        if (!button) {
+
+          return;
+
+        }
+
+
+        const id =
+          Number(
+            button.dataset.id
+          );
+
+
+        deleteExpense(
+          id
+        );
+
+      }
+
+    );
+
+}
+
+
+// --------------------------------
+// ＋支出を追加
+// --------------------------------
+ 
+const addExpenseButton =
+  document.getElementById(
+    "addExpenseButton"
+  );
+
+
+if (
+  addExpenseButton
+) {
+
+  addExpenseButton
+    .addEventListener(
+
+      "click",
+
+      () => {
+
+        addExpense();
+
+      }
+
+    );
+
+}
+
 
 // --------------------------------
 // 最初の表示
