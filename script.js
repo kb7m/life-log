@@ -61,6 +61,544 @@ const STORAGE_KEY =
 const RESULT_STORAGE_KEY =
   "lifeLogResultData";
 
+  // --------------------------------
+// 写真用 IndexedDB
+// --------------------------------
+
+const PHOTO_DB_NAME =
+  "LifeLogDB";
+
+const PHOTO_DB_VERSION =
+  1;
+
+const PHOTO_STORE_NAME =
+  "dailyPhotos";
+
+  // --------------------------------
+// IndexedDBを開く
+// --------------------------------
+
+function openPhotoDB() {
+
+  return new Promise(
+    (resolve, reject) => {
+
+      const request =
+        indexedDB.open(
+          PHOTO_DB_NAME,
+          PHOTO_DB_VERSION
+        );
+
+
+      request.onupgradeneeded =
+        event => {
+
+          const db =
+            event.target.result;
+
+
+          if (
+            !db.objectStoreNames.contains(
+              PHOTO_STORE_NAME
+            )
+          ) {
+
+            db.createObjectStore(
+              PHOTO_STORE_NAME,
+              {
+                keyPath:
+                  "date"
+              }
+            );
+
+          }
+
+        };
+
+
+      request.onsuccess =
+        event => {
+
+          resolve(
+            event.target.result
+          );
+
+        };
+
+
+      request.onerror =
+        event => {
+
+          reject(
+            event.target.error
+          );
+
+        };
+
+    }
+  );
+
+}
+
+// --------------------------------
+// 写真を縮小・圧縮
+// --------------------------------
+
+function compressImage(
+  file
+) {
+
+  return new Promise(
+    (resolve, reject) => {
+
+      const image =
+        new Image();
+
+      const objectUrl =
+        URL.createObjectURL(
+          file
+        );
+
+
+      image.onload =
+        () => {
+
+          const MAX_SIZE =
+            1600;
+
+          let width =
+            image.naturalWidth;
+
+          let height =
+            image.naturalHeight;
+
+
+          // 大きい画像だけ縮小
+          if (
+            width > MAX_SIZE ||
+            height > MAX_SIZE
+          ) {
+
+            const scale =
+              Math.min(
+                MAX_SIZE / width,
+                MAX_SIZE / height
+              );
+
+
+            width =
+              Math.round(
+                width * scale
+              );
+
+            height =
+              Math.round(
+                height * scale
+              );
+
+          }
+
+
+          const canvas =
+            document.createElement(
+              "canvas"
+            );
+
+
+          canvas.width =
+            width;
+
+          canvas.height =
+            height;
+
+
+          const context =
+            canvas.getContext(
+              "2d"
+            );
+
+
+          if (!context) {
+
+            URL.revokeObjectURL(
+              objectUrl
+            );
+
+            reject(
+              new Error(
+                "画像の処理に失敗しました"
+              )
+            );
+
+            return;
+
+          }
+
+
+          context.drawImage(
+            image,
+            0,
+            0,
+            width,
+            height
+          );
+
+
+          canvas.toBlob(
+            blob => {
+
+              URL.revokeObjectURL(
+                objectUrl
+              );
+
+
+              if (!blob) {
+
+                reject(
+                  new Error(
+                    "画像の圧縮に失敗しました"
+                  )
+                );
+
+                return;
+
+              }
+
+
+              resolve(
+                blob
+              );
+
+            },
+
+            "image/jpeg",
+
+            0.82
+
+          );
+
+        };
+
+
+      image.onerror =
+        () => {
+
+          URL.revokeObjectURL(
+            objectUrl
+          );
+
+          reject(
+            new Error(
+              "画像を読み込めませんでした"
+            )
+          );
+
+        };
+
+
+      image.src =
+        objectUrl;
+
+    }
+  );
+
+}
+
+  // --------------------------------
+// 写真保存
+// --------------------------------
+
+async function saveDailyPhoto(
+  file
+) {
+
+  const db =
+    await openPhotoDB();
+
+
+  return new Promise(
+    (resolve, reject) => {
+
+      const transaction =
+        db.transaction(
+          PHOTO_STORE_NAME,
+          "readwrite"
+        );
+
+
+      const store =
+        transaction.objectStore(
+          PHOTO_STORE_NAME
+        );
+
+
+      store.put({
+
+        date:
+          selectedDateKey,
+
+        image:
+          file
+
+      });
+
+
+      transaction.oncomplete =
+        () => {
+
+          db.close();
+
+          resolve();
+
+        };
+
+
+      transaction.onerror =
+        event => {
+
+          db.close();
+
+          reject(
+            event.target.error
+          );
+
+        };
+
+    }
+  );
+
+}
+
+// --------------------------------
+// 写真取得
+// --------------------------------
+
+async function getDailyPhoto() {
+
+  const db =
+    await openPhotoDB();
+
+
+  return new Promise(
+    (resolve, reject) => {
+
+      const transaction =
+        db.transaction(
+          PHOTO_STORE_NAME,
+          "readonly"
+        );
+
+
+      const store =
+        transaction.objectStore(
+          PHOTO_STORE_NAME
+        );
+
+
+      const request =
+        store.get(
+          selectedDateKey
+        );
+
+
+      request.onsuccess =
+        () => {
+
+          db.close();
+
+          resolve(
+            request.result || null
+          );
+
+        };
+
+
+      request.onerror =
+        () => {
+
+          db.close();
+
+          reject(
+            request.error
+          );
+
+        };
+
+    }
+  );
+
+}
+
+// --------------------------------
+// 今日の写真を表示
+// --------------------------------
+
+let currentPhotoUrl =
+  null;
+
+
+async function renderDailyPhoto() {
+
+  const container =
+    document.getElementById(
+      "dailyPhotoPreview"
+    );
+
+
+  const deleteButton =
+    document.getElementById(
+      "deletePhotoButton"
+    );
+
+
+  if (!container) {
+
+    return;
+
+  }
+
+
+  if (
+    currentPhotoUrl
+  ) {
+
+    URL.revokeObjectURL(
+      currentPhotoUrl
+    );
+
+    currentPhotoUrl =
+      null;
+
+  }
+
+
+  const photo =
+    await getDailyPhoto();
+
+
+  if (
+    !photo
+  ) {
+
+    container.innerHTML = `
+      <p class="photo-empty">
+        まだ写真がありません
+      </p>
+    `;
+
+
+    if (
+      deleteButton
+    ) {
+
+      deleteButton.hidden =
+        true;
+
+    }
+
+
+    return;
+
+  }
+
+
+  currentPhotoUrl =
+    URL.createObjectURL(
+      photo.image
+    );
+
+
+  container.innerHTML = `
+    <img
+      src="${currentPhotoUrl}"
+      alt="今日の写真"
+    >
+  `;
+
+
+  if (
+    deleteButton
+  ) {
+
+    deleteButton.hidden =
+      false;
+
+  }
+
+}
+
+// --------------------------------
+// 写真削除
+// --------------------------------
+
+async function deleteDailyPhoto() {
+
+  const result =
+    confirm(
+      "この日の写真を削除しますか？"
+    );
+
+
+  if (
+    !result
+  ) {
+
+    return;
+
+  }
+
+
+  const db =
+    await openPhotoDB();
+
+
+  await new Promise(
+    (resolve, reject) => {
+
+      const transaction =
+        db.transaction(
+          PHOTO_STORE_NAME,
+          "readwrite"
+        );
+
+
+      transaction
+        .objectStore(
+          PHOTO_STORE_NAME
+        )
+        .delete(
+          selectedDateKey
+        );
+
+
+      transaction.oncomplete =
+        () => {
+
+          db.close();
+
+          resolve();
+
+        };
+
+
+      transaction.onerror =
+        event => {
+
+          db.close();
+
+          reject(
+            event.target.error
+          );
+
+        };
+
+    }
+  );
+
+
+  renderDailyPhoto();
+
+}
 
 // --------------------------------
 // 実績の初期データ
@@ -216,7 +754,9 @@ function createDefaultDailyResults() {
     activities:
       createDefaultActivityResults(),
 
-    expenses: []
+    expenses: [],
+
+    dailyNote: ""
 
   };
 
@@ -638,6 +1178,20 @@ function loadResultsForDate(
 
   }
 
+  // --------------------------------
+// 一言メモがない旧データへの対応
+// --------------------------------
+
+if (
+  typeof data.dailyNote !==
+  "string"
+) {
+
+  data.dailyNote =
+    "";
+
+}
+
 
   allResultData[
     dateKey
@@ -979,6 +1533,10 @@ function renderSchedules() {
   renderActivityResults();
 
   renderExpenseResults();
+
+  renderDailyNote();
+
+  renderDailyPhoto();
 
   updateDate();
 
@@ -1929,6 +2487,30 @@ function updateResults() {
 
 }
 
+// --------------------------------
+// 今日の一言を表示
+// --------------------------------
+
+function renderDailyNote() {
+
+  const input =
+    document.getElementById(
+      "dailyNoteInput"
+    );
+
+
+  if (!input) {
+
+    return;
+
+  }
+
+
+  input.value =
+    dailyResults.dailyNote || "";
+
+}
+
 
 // --------------------------------
 // 実績一覧表示
@@ -2854,113 +3436,421 @@ if (
 
 }
 
+// --------------------------------
+// Blob → DataURL
+// --------------------------------
+
+function blobToDataUrl(
+  blob
+) {
+
+  return new Promise(
+    (resolve, reject) => {
+
+      const reader =
+        new FileReader();
+
+      reader.onload =
+        () => {
+
+          resolve(
+            reader.result
+          );
+
+        };
+
+      reader.onerror =
+        () => {
+
+          reject(
+            reader.error
+          );
+
+        };
+
+      reader.readAsDataURL(
+        blob
+      );
+
+    }
+  );
+
+}
+
+
+// --------------------------------
+// DataURL → Blob
+// --------------------------------
+
+function dataUrlToBlob(
+  dataUrl
+) {
+
+  const parts =
+    dataUrl.split(",");
+
+  const header =
+    parts[0];
+
+  const base64 =
+    parts[1];
+
+  const mimeMatch =
+    header.match(
+      /data:(.*?);base64/
+    );
+
+  const mime =
+    mimeMatch
+      ? mimeMatch[1]
+      : "image/jpeg";
+
+  const binary =
+    atob(
+      base64
+    );
+
+  const bytes =
+    new Uint8Array(
+      binary.length
+    );
+
+  for (
+    let i = 0;
+    i < binary.length;
+    i++
+  ) {
+
+    bytes[i] =
+      binary.charCodeAt(
+        i
+      );
+
+  }
+
+  return new Blob(
+    [
+      bytes
+    ],
+    {
+      type:
+        mime
+    }
+  );
+
+}
+
+
+// --------------------------------
+// IndexedDBの写真を全部取得
+// --------------------------------
+
+async function getAllDailyPhotos() {
+
+  const db =
+    await openPhotoDB();
+
+  return new Promise(
+    (resolve, reject) => {
+
+      const transaction =
+        db.transaction(
+          PHOTO_STORE_NAME,
+          "readonly"
+        );
+
+      const store =
+        transaction.objectStore(
+          PHOTO_STORE_NAME
+        );
+
+      const request =
+        store.getAll();
+
+      let photos =
+        [];
+
+      request.onsuccess =
+        () => {
+
+          photos =
+            request.result || [];
+
+        };
+
+      request.onerror =
+        () => {
+
+          reject(
+            request.error
+          );
+
+        };
+
+      transaction.oncomplete =
+        () => {
+
+          db.close();
+
+          resolve(
+            photos
+          );
+
+        };
+
+      transaction.onerror =
+        event => {
+
+          db.close();
+
+          reject(
+            event.target.error
+          );
+
+        };
+
+    }
+  );
+
+}
+
+
+// --------------------------------
+// IndexedDBの写真を置き換える
+// --------------------------------
+
+async function replaceAllDailyPhotos(
+  photoBackups
+) {
+
+  const preparedPhotos =
+    photoBackups
+      .filter(
+        photo =>
+          typeof photo.date ===
+            "string" &&
+          typeof photo.imageData ===
+            "string"
+      )
+      .map(
+        photo => ({
+
+          date:
+            photo.date,
+
+          image:
+            dataUrlToBlob(
+              photo.imageData
+            )
+
+        })
+      );
+
+
+  const db =
+    await openPhotoDB();
+
+  return new Promise(
+    (resolve, reject) => {
+
+      const transaction =
+        db.transaction(
+          PHOTO_STORE_NAME,
+          "readwrite"
+        );
+
+      const store =
+        transaction.objectStore(
+          PHOTO_STORE_NAME
+        );
+
+      store.clear();
+
+
+      preparedPhotos.forEach(
+        photo => {
+
+          store.put(
+            photo
+          );
+
+        }
+      );
+
+
+      transaction.oncomplete =
+        () => {
+
+          db.close();
+
+          resolve();
+
+        };
+
+
+      transaction.onerror =
+        event => {
+
+          db.close();
+
+          reject(
+            event.target.error
+          );
+
+        };
+
+    }
+  );
+
+}
+
 
 // --------------------------------
 // バックアップ作成
 // --------------------------------
 
-function exportBackup() {
+async function exportBackup() {
 
-  const backupData = {
+  try {
 
-    app:
-      "LifeLog",
-
-    version:
-      "1.1.0",
-
-    exportedAt:
-      new Date().toISOString(),
-
-    lifeLogData:
-      allData,
-
-    lifeLogResultData:
-      allResultData
-
-  };
+    const photos =
+      await getAllDailyPhotos();
 
 
-  const json =
-    JSON.stringify(
-      backupData,
-      null,
-      2
+    const lifeLogPhotos =
+      await Promise.all(
+        photos.map(
+          async photo => ({
+
+            date:
+              photo.date,
+
+            imageData:
+              await blobToDataUrl(
+                photo.image
+              )
+
+          })
+        )
+      );
+
+
+    const backupData = {
+
+      app:
+        "LifeLog",
+
+      version:
+        "1.1.0",
+
+      exportedAt:
+        new Date().toISOString(),
+
+      lifeLogData:
+        allData,
+
+      lifeLogResultData:
+        allResultData,
+
+      lifeLogPhotos:
+        lifeLogPhotos
+
+    };
+
+
+    const json =
+      JSON.stringify(
+        backupData,
+        null,
+        2
+      );
+
+
+    const blob =
+      new Blob(
+        [
+          json
+        ],
+        {
+          type:
+            "application/json"
+        }
+      );
+
+
+    const url =
+      URL.createObjectURL(
+        blob
+      );
+
+
+    const link =
+      document.createElement(
+        "a"
+      );
+
+
+    const now =
+      new Date();
+
+
+    const year =
+      now.getFullYear();
+
+
+    const month =
+      String(
+        now.getMonth() + 1
+      ).padStart(
+        2,
+        "0"
+      );
+
+
+    const day =
+      String(
+        now.getDate()
+      ).padStart(
+        2,
+        "0"
+      );
+
+
+    link.href =
+      url;
+
+
+    link.download =
+      `LifeLog-backup-${year}-${month}-${day}.json`;
+
+
+    document.body.appendChild(
+      link
     );
 
 
-  const blob =
-    new Blob(
-      [
-        json
-      ],
-      {
-        type:
-          "application/json"
-      }
+    link.click();
+
+
+    link.remove();
+
+
+    URL.revokeObjectURL(
+      url
     );
 
 
-  const url =
-    URL.createObjectURL(
-      blob
+  } catch (error) {
+
+    console.error(
+      error
     );
 
-
-  const link =
-    document.createElement(
-      "a"
+    alert(
+      "バックアップの作成に失敗しました。"
     );
 
-
-  const now =
-    new Date();
-
-
-  const year =
-    now.getFullYear();
-
-
-  const month =
-    String(
-      now.getMonth() + 1
-    ).padStart(
-      2,
-      "0"
-    );
-
-
-  const day =
-    String(
-      now.getDate()
-    ).padStart(
-      2,
-      "0"
-    );
-
-
-  link.href =
-    url;
-
-
-  link.download =
-    `LifeLog-backup-${year}-${month}-${day}.json`;
-
-
-  document.body.appendChild(
-    link
-  );
-
-
-  link.click();
-
-
-  link.remove();
-
-
-  URL.revokeObjectURL(
-    url
-  );
+  }
 
 }
 
@@ -2969,120 +3859,117 @@ function exportBackup() {
 // バックアップ復元
 // --------------------------------
 
-function importBackup(
+async function importBackup(
   file
 ) {
 
-  const reader =
-    new FileReader();
+  try {
+
+    const text =
+      await file.text();
 
 
-  reader.onload =
-    event => {
-
-      try {
-
-        const backup =
-          JSON.parse(
-            event.target.result
-          );
+    const backup =
+      JSON.parse(
+        text
+      );
 
 
-        // LifeLogバックアップか確認
-        if (
-          backup.app !==
-          "LifeLog"
-        ) {
+    if (
+      backup.app !==
+      "LifeLog"
+    ) {
 
-          alert(
-            "LifeLogのバックアップファイルではありません。"
-          );
+      alert(
+        "LifeLogのバックアップファイルではありません。"
+      );
 
-          return;
+      return;
 
-        }
-
-
-        if (
-          !backup.lifeLogData ||
-          !backup.lifeLogResultData
-        ) {
-
-          alert(
-            "バックアップデータが正しくありません。"
-          );
-
-          return;
-
-        }
+    }
 
 
-        const result =
-          confirm(
-            "現在のLifeLogデータをバックアップの内容で置き換えます。\n\n復元しますか？"
-          );
+    if (
+      !backup.lifeLogData ||
+      !backup.lifeLogResultData
+    ) {
+
+      alert(
+        "バックアップデータが正しくありません。"
+      );
+
+      return;
+
+    }
 
 
-        if (
-          !result
-        ) {
-
-          return;
-
-        }
+    const result =
+      confirm(
+        "現在のLifeLogデータをバックアップの内容で置き換えます。\n\n復元しますか？"
+      );
 
 
-        localStorage.setItem(
+    if (
+      !result
+    ) {
 
-          STORAGE_KEY,
+      return;
 
-          JSON.stringify(
-            backup.lifeLogData
-          )
-
-        );
+    }
 
 
-        localStorage.setItem(
-
-          RESULT_STORAGE_KEY,
-
-          JSON.stringify(
-            backup.lifeLogResultData
-          )
-
-        );
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify(
+        backup.lifeLogData
+      )
+    );
 
 
-        alert(
-          "バックアップを復元しました。"
-        );
+    localStorage.setItem(
+      RESULT_STORAGE_KEY,
+      JSON.stringify(
+        backup.lifeLogResultData
+      )
+    );
 
 
-        location.reload();
+    // 新しいバックアップなら
+    // 写真も復元
+    if (
+      Array.isArray(
+        backup.lifeLogPhotos
+      )
+    ) {
 
-      } catch (error) {
+      await replaceAllDailyPhotos(
+        backup.lifeLogPhotos
+      );
 
-        console.error(
-          error
-        );
-
-
-        alert(
-          "JSONファイルを読み込めませんでした。"
-        );
-
-      }
-
-    };
+    }
 
 
-  reader.readAsText(
-    file
-  );
+    alert(
+      "バックアップを復元しました。"
+    );
+
+
+    location.reload();
+
+
+  } catch (error) {
+
+    console.error(
+      error
+    );
+
+    alert(
+      "バックアップの復元に失敗しました。"
+    );
+
+  }
 
 }
-
 
 // --------------------------------
 // バックアップボタン
@@ -3674,6 +4561,199 @@ if (
 
       }
 
+    );
+
+}
+
+// --------------------------------
+// 今日の一言
+// --------------------------------
+
+const dailyNoteInput =
+  document.getElementById(
+    "dailyNoteInput"
+  );
+
+
+if (
+  dailyNoteInput
+) {
+
+  dailyNoteInput
+    .addEventListener(
+      "input",
+      event => {
+
+        dailyResults.dailyNote =
+          event.target.value;
+
+        saveDailyResults();
+
+      }
+    );
+
+}
+
+// --------------------------------
+// 今日の写真
+// --------------------------------
+
+const dailyPhotoInput =
+  document.getElementById(
+    "dailyPhotoInput"
+  );
+
+
+const selectPhotoButton =
+  document.getElementById(
+    "selectPhotoButton"
+  );
+
+
+const deletePhotoButton =
+  document.getElementById(
+    "deletePhotoButton"
+  );
+
+
+if (
+  selectPhotoButton &&
+  dailyPhotoInput
+) {
+
+  selectPhotoButton
+    .addEventListener(
+      "click",
+      () => {
+
+        dailyPhotoInput.click();
+
+      }
+    );
+
+
+  dailyPhotoInput
+    .addEventListener(
+      "change",
+      async event => {
+
+        const file =
+          event.target.files[
+            0
+          ];
+
+
+        if (
+          !file
+        ) {
+
+          return;
+
+        }
+
+
+        if (
+          !file.type.startsWith(
+            "image/"
+          )
+        ) {
+
+          alert(
+            "画像ファイルを選んでください"
+          );
+
+          return;
+
+        }
+
+        try {
+
+  
+          console.log(
+    
+            "圧縮前:",
+    
+            Math.round(
+      
+              file.size / 1024
+    
+            ),
+    
+            "KB"
+  
+          );
+
+  
+          const compressedImage =
+    
+          await compressImage(
+      
+            file
+    
+          );
+
+  
+          
+  
+          await saveDailyPhoto(
+    
+            compressedImage
+  
+          );
+
+  
+          await renderDailyPhoto();
+
+
+        } catch (error) {
+
+  
+          console.error(
+    
+            error
+  
+          );
+
+  
+          alert(
+    
+            "写真の保存に失敗しました"
+  
+          );
+
+
+        }
+
+
+          
+
+
+        
+      event.target.value =
+          
+      "";
+
+      
+    }
+    
+  );
+
+
+}
+
+
+if (
+  deletePhotoButton
+) {
+
+  deletePhotoButton
+    .addEventListener(
+      "click",
+      () => {
+
+        deleteDailyPhoto();
+
+      }
     );
 
 }

@@ -227,6 +227,66 @@
 
     </section>
 
+    <!-- 今日の一言 -->
+    <section class="card note-card">
+
+      <h2>
+        今日の一言
+      </h2>
+
+      <input
+      tyape="text"
+        id="dailyNoteInput"
+        class="daily-note-input"
+        placeholder="今日どうだった？"
+        maxlength="100"
+      >
+    </section>
+
+    <!-- 今日の写真 -->
+<section class="card photo-card">
+
+  <h2>
+    今日の写真
+  </h2>
+
+  <div
+    id="dailyPhotoPreview"
+    class="daily-photo-preview"
+  >
+    <p class="photo-empty">
+      まだ写真がありません
+    </p>
+  </div>
+
+  <input
+    type="file"
+    id="dailyPhotoInput"
+    accept="image/*"
+    hidden
+  >
+
+  <div class="photo-buttons">
+
+    <button
+      id="selectPhotoButton"
+      class="photo-button"
+    >
+      ＋ 写真を選ぶ
+    </button>
+
+    <button
+      id="deletePhotoButton"
+      class="photo-button photo-delete-button"
+      hidden
+    >
+      写真を削除
+    </button>
+
+  </div>
+
+</section>
+
 
 
     <!-- 週間まとめ -->
