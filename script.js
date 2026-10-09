@@ -2876,6 +2876,68 @@ function updateDate() {
     );
 
 
+    const monthProgress =
+  document.getElementById(
+    "monthProgress"
+  );
+
+
+
+  if (
+
+    monthProgress
+
+  ) {
+
+
+    const year =
+
+    date.getFullYear();
+
+
+    const month =
+
+    date.getMonth();
+
+
+    const currentDay =
+
+    date.getDate();
+
+
+
+    const lastDay =
+
+    new Date(
+      year,
+      month + 1,
+      0
+    ).getDate();
+
+
+    const remainingDays =
+    lastDay -
+    currentDay;
+
+    if (
+      remainingDays === 0
+    ) {
+
+
+      monthProgress.textContent =
+      `${month + 1}月${lastDay}日まで ・ 今日で終了`;
+
+    } else {
+
+      monthProgress.textContent =
+      `${month + 1}月${lastDay}日まで ・ あと${remainingDays}日`;
+
+    }
+
+  }
+
+
+
   const todayDate =
     document.getElementById(
       "todayDate"
@@ -3741,7 +3803,7 @@ async function exportBackup() {
         "LifeLog",
 
       version:
-        "1.1.0",
+        "1.2.0",
 
       exportedAt:
         new Date().toISOString(),

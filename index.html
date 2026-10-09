@@ -41,15 +41,19 @@
     <!-- ヘッダー -->
     <header class="header">
 
-      <div>
-
-        <p class="sub-title">
-          DAILY TRACKER
-        </p>
+      
+      <div class="app-title-area">
 
         <h1>
-          今日の予定
+          LifeLog
         </h1>
+
+        <span
+
+        id="monthProgress"
+        class="month-progress"
+
+        ></span>
 
       </div>
 
@@ -59,6 +63,7 @@
         <button
           id="prevDateButton"
           class="date-button"
+          type="button"
         >
           ←
         </button>
@@ -67,6 +72,7 @@
         <button
           id="todayButton"
           class="today-button"
+          type="button"
         >
           今日
         </button>
@@ -81,6 +87,7 @@
         <button
           id="nextDateButton"
           class="date-button"
+          type="button"
         >
           →
         </button>
@@ -91,325 +98,522 @@
 
 
 
-    <!-- 予定一覧 -->
+   
+    <!-- ================================  
+    予定タブ
+    ================================= -->
+
+
+    <div
+  
+    id="scheduleTabPanel"
+  
+    class="tab-panel active"
+
+    >
+
+  
+    <!-- 今日の予定 -->
+  
     <section class="card">
 
+ 
       <div
-        id="scheduleList"
-        class="schedule-list"
+ 
+      id="scheduleList"
+ 
+      class="schedule-list"
+ 
       ></div>
 
 
+ 
       <button
-        id="addButton"
-        class="add-button"
+ 
+      id="addButton"
+ 
+      class="add-button"
+ 
+      type="button"
+ 
       >
-        ＋ 予定を追加
-      </button>
+ 
+      ＋ 予定を追加
+ 
+    </button>
 
-    </section>
+
+
+  </section>
 
 
 
-    <!-- 今日の実績 -->
-    <section class="card result-card">
+
+  <!-- 週間まとめ -->
+
+  <section class="card weekly-card">
+
+    <div class="weekly-header">
 
       <h2>
-        今日の実績
+        週間まとめ
       </h2>
 
 
-      <!-- 起床 -->
-      <div class="result-row result-time-row">
+      <span
+        id="weeklyDateRange"
+        class="weekly-date-range"
+      ></span>
+
+    </div>
+
+
+    <!-- 週間実績 -->
+    <div
+      id="weeklyActivitySummary"
+      class="weekly-activity-summary"
+    ></div>
+
+
+    <!-- 週間支出 -->
+    <div class="weekly-expense-section">
+
+      <div class="weekly-expense-total-row">
 
         <span>
-          今日の起床
+          週間支出
         </span>
 
 
-        <input
-          type="time"
-          id="wakeTimeInput"
-          class="result-time-input"
-        >
-
-      </div>
-
-
-      <!-- 就寝 -->
-      <div class="result-row result-time-row">
-
-        <span>
-          今日の就寝
-        </span>
-
-
-        <input
-          type="time"
-          id="sleepTimeInput"
-          class="result-time-input"
-        >
-
-      </div>
-
-
-      <!-- 実績一覧 -->
-      <div
-        id="activityResults"
-        class="activity-results"
-      ></div>
-
-
-      <!-- 実績追加 -->
-      <button
-        id="addActivityButton"
-        class="add-activity-button"
-      >
-        ＋ 実績を追加
-      </button>
-
-
-      <!-- 達成数 -->
-      <div class="result-row achievement">
-
-        <span>
-          達成
-        </span>
-
-
-        <strong id="achievementResult">
-          0 / 0
-        </strong>
-
-      </div>
-
-    </section>
-
-
-
-    <!-- 今日の支出 -->
-    <section class="card expense-card">
-
-      <h2>
-        今日の支出
-      </h2>
-
-
-      <div
-        id="expenseResults"
-        class="expense-results"
-      ></div>
-
-
-      <div class="expense-total-row">
-
-        <span>
-          今日の合計
-        </span>
-
-
-        <strong
-          id="dailyExpenseTotal"
-          class="expense-total"
-        >
+        <strong id="weeklyExpenseTotal">
           0円
         </strong>
 
       </div>
 
 
-      <button
-        id="addExpenseButton"
-        class="add-expense-button"
-      >
-        ＋ 支出を追加
-      </button>
+      <div
+        id="weeklyExpenseSummary"
+        class="weekly-expense-summary"
+      ></div>
 
-    </section>
+    </div>
 
-    <!-- 今日の一言 -->
-    <section class="card note-card">
+  </section>
 
-      <h2>
-        今日の一言
-      </h2>
+</div>
 
-      <input
-      tyape="text"
-        id="dailyNoteInput"
-        class="daily-note-input"
-        placeholder="今日どうだった？"
-        maxlength="100"
-      >
-    </section>
 
-    <!-- 今日の写真 -->
-<section class="card photo-card">
+    <!-- ================================
+         実績タブ
+    ================================= -->
 
-  <h2>
-    今日の写真
-  </h2>
-
-  <div
-    id="dailyPhotoPreview"
-    class="daily-photo-preview"
-  >
-    <p class="photo-empty">
-      まだ写真がありません
-    </p>
-  </div>
-
-  <input
-    type="file"
-    id="dailyPhotoInput"
-    accept="image/*"
-    hidden
-  >
-
-  <div class="photo-buttons">
-
-    <button
-      id="selectPhotoButton"
-      class="photo-button"
+    <div
+      id="resultTabPanel"
+      class="tab-panel"
     >
-      ＋ 写真を選ぶ
-    </button>
-
-    <button
-      id="deletePhotoButton"
-      class="photo-button photo-delete-button"
-      hidden
-    >
-      写真を削除
-    </button>
-
-  </div>
-
-</section>
 
 
-
-    <!-- 週間まとめ -->
-    <section class="card weekly-card">
-
-      <div class="weekly-header">
+      <!-- 今日の実績 -->
+      <section class="card result-card">
 
         <h2>
-          週間まとめ
+          今日の実績
         </h2>
 
 
-        <span
-          id="weeklyDateRange"
-          class="weekly-date-range"
-        ></span>
-
-      </div>
-
-
-      <div
-        id="weeklyActivitySummary"
-        class="weekly-activity-summary"
-      ></div>
-      
-      <div class="weekly-expense-section">
-      
-        <div class="weekly-expense-total-row">
+        <!-- 起床 -->
+        <div class="result-row result-time-row">
 
           <span>
-            週間支出
+            今日の起床
           </span>
 
-          <strong id="weeklyExpenseTotal">
+
+          <input
+            type="time"
+            id="wakeTimeInput"
+            class="result-time-input"
+          >
+
+        </div>
+
+
+        <!-- 就寝 -->
+        <div class="result-row result-time-row">
+
+          <span>
+            今日の就寝
+          </span>
+
+
+          <input
+            type="time"
+            id="sleepTimeInput"
+            class="result-time-input"
+          >
+
+        </div>
+
+
+        <!-- 実績一覧 -->
+        <div
+          id="activityResults"
+          class="activity-results"
+        ></div>
+
+
+        <!-- 実績追加 -->
+        <button
+          id="addActivityButton"
+          class="add-activity-button"
+          type="button"
+        >
+          ＋ 実績を追加
+        </button>
+
+
+        <!-- 達成数 -->
+        <div class="result-row achievement">
+
+          <span>
+            達成
+          </span>
+
+
+          <strong id="achievementResult">
+            0 / 0
+          </strong>
+
+        </div>
+
+      </section>
+
+
+
+      <!-- 今日の支出 -->
+      <section class="card expense-card">
+
+        <h2>
+          今日の支出
+        </h2>
+
+
+        <div
+          id="expenseResults"
+          class="expense-results"
+        ></div>
+
+
+        <div class="expense-total-row">
+
+          <span>
+            今日の合計
+          </span>
+
+
+          <strong
+            id="dailyExpenseTotal"
+            class="expense-total"
+          >
             0円
           </strong>
 
         </div>
 
 
+        <button
+          id="addExpenseButton"
+          class="add-expense-button"
+          type="button"
+        >
+          ＋ 支出を追加
+        </button>
+
+      </section>
+
+
+
+      <!-- 今日の一言 -->
+      <section class="card note-card">
+
+        <h2>
+          今日の一言
+        </h2>
+
+
+        <input
+          type="text"
+          id="dailyNoteInput"
+          class="daily-note-input"
+          placeholder="今日どうだった？"
+          maxlength="100"
+        >
+
+      </section>
+
+
+
+      <!-- 今日の写真 -->
+      <section class="card photo-card">
+
+        <h2>
+          今日の写真
+        </h2>
+
+
         <div
-    
-        id="weeklyExpenseSummary"
-    
-        class="weekly-expense-summary"
-  
-        ></div>
-
-      </div>
-
-    </section>
-
-
-
-    <!-- データ管理 -->
-    <section class="card backup-card">
-
-      <h2>
-        データ管理
-      </h2>
-
-
-      <p class="backup-description">
-        予定と実績をJSONファイルとして保存できます。
-      </p>
-
-
-      <div class="backup-buttons">
-
-        <button
-          id="exportBackupButton"
-          class="backup-button"
+          id="dailyPhotoPreview"
+          class="daily-photo-preview"
         >
-          バックアップ
-        </button>
+
+          <p class="photo-empty">
+            まだ写真がありません
+          </p>
+
+        </div>
 
 
-        <button
-          id="importBackupButton"
-          class="backup-button"
+        <input
+          type="file"
+          id="dailyPhotoInput"
+          accept="image/*"
+          hidden
         >
-          復元
-        </button>
-
-      </div>
 
 
-      <input
-        type="file"
-        id="backupFileInput"
-        accept=".json,application/json"
-        hidden
-      >
+        <div class="photo-buttons">
 
-    </section>
+          <button
+            id="selectPhotoButton"
+            class="photo-button"
+            type="button"
+          >
+            ＋ 写真を選ぶ
+          </button>
 
+
+          <button
+            id="deletePhotoButton"
+            class="photo-button photo-delete-button"
+            type="button"
+            hidden
+          >
+            写真を削除
+          </button>
+
+        </div>
+
+      </section>
+
+
+
+
+      <!-- データ管理 -->
+      <section class="card backup-card">
+
+        <h2>
+          データ管理
+        </h2>
+
+
+        <p class="backup-description">
+          予定・実績・支出・一言メモ・写真を保存できます。
+        </p>
+
+
+        <div class="backup-buttons">
+
+          <button
+            id="exportBackupButton"
+            class="backup-button"
+            type="button"
+          >
+            バックアップ
+          </button>
+
+
+          <button
+            id="importBackupButton"
+            class="backup-button"
+            type="button"
+          >
+            復元
+          </button>
+
+        </div>
+
+
+        <input
+          type="file"
+          id="backupFileInput"
+          accept=".json,application/json"
+          hidden
+        >
+
+      </section>
+
+
+    </div>
 
   </main>
 
 
-  <!-- LifeLog -->
+
+  <!-- ================================
+       下部タブ
+  ================================= -->
+
+  <nav class="bottom-tabs">
+
+    <button
+      id="scheduleTabButton"
+      class="bottom-tab active"
+      type="button"
+    >
+      予定
+    </button>
+
+
+    <button
+      id="resultTabButton"
+      class="bottom-tab"
+      type="button"
+    >
+      実績
+    </button>
+
+  </nav>
+
+
+
+  <!-- LifeLog本体 -->
   <script src="script.js"></script>
 
 
-  <!-- PWA -->
+
+  <!-- ================================
+       予定 / 実績 タブ切り替え
+  ================================= -->
+
   <script>
 
-    if ("serviceWorker" in navigator) {
+    const scheduleTabButton =
+      document.getElementById(
+        "scheduleTabButton"
+      );
+
+    const resultTabButton =
+      document.getElementById(
+        "resultTabButton"
+      );
+
+    const scheduleTabPanel =
+      document.getElementById(
+        "scheduleTabPanel"
+      );
+
+    const resultTabPanel =
+      document.getElementById(
+        "resultTabPanel"
+      );
+
+
+    function switchMainTab(
+      tab
+    ) {
+
+      const isSchedule =
+        tab === "schedule";
+
+
+      scheduleTabPanel
+        .classList.toggle(
+          "active",
+          isSchedule
+        );
+
+
+      resultTabPanel
+        .classList.toggle(
+          "active",
+          !isSchedule
+        );
+
+
+      scheduleTabButton
+        .classList.toggle(
+          "active",
+          isSchedule
+        );
+
+
+      resultTabButton
+        .classList.toggle(
+          "active",
+          !isSchedule
+        );
+
+    }
+
+
+    scheduleTabButton
+      .addEventListener(
+        "click",
+        () => {
+
+          switchMainTab(
+            "schedule"
+          );
+
+        }
+      );
+
+
+    resultTabButton
+      .addEventListener(
+        "click",
+        () => {
+
+          switchMainTab(
+            "result"
+          );
+
+        }
+      );
+
+  </script>
+
+
+
+  <!-- ================================
+       PWA
+  ================================= -->
+
+  <script>
+
+    if (
+      "serviceWorker" in navigator
+    ) {
 
       window.addEventListener(
         "load",
         () => {
 
           navigator.serviceWorker
-            .register("./sw.js")
-            .catch(error => {
+            .register(
+              "./sw.js"
+            )
+            .catch(
+              error => {
 
-              console.error(
-                "Service Worker登録失敗:",
-                error
-              );
+                console.error(
+                  "Service Worker登録失敗:",
+                  error
+                );
 
-            });
+              }
+            );
 
         }
       );

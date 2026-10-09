@@ -958,3 +958,1536 @@ h1 {
 .photo-delete-button {
   color: #ff8088;
 }
+
+/* --------------------------------
+   メインタブ
+-------------------------------- */
+
+.tab-panel {
+  display: none;
+}
+
+.tab-panel.active {
+  display: block;
+}
+
+
+/* --------------------------------
+   下部タブ
+-------------------------------- */
+
+.bottom-tabs {
+  position: fixed;
+
+  left: 50%;
+  bottom: 0;
+
+  transform: translateX(-50%);
+
+  width: min(100%, 620px);
+
+  display: grid;
+  grid-template-columns:
+    1fr
+    1fr;
+
+  padding:
+    8px
+    12px
+    calc(
+      8px +
+      env(safe-area-inset-bottom)
+    );
+
+  background:
+    rgba(
+      17,
+      19,
+      24,
+      0.94
+    );
+
+  border-top:
+    1px solid
+    #252932;
+
+  backdrop-filter:
+    blur(18px);
+
+  z-index: 100;
+}
+
+
+.bottom-tab {
+  position: relative;
+
+  padding: 13px 0;
+
+  border: none;
+
+  background:
+    transparent;
+
+  color:
+    #717784;
+
+  font-size:
+    14px;
+
+  font-weight:
+    600;
+
+  cursor: pointer;
+}
+
+
+.bottom-tab.active {
+  color:
+    #ffffff;
+}
+
+
+.bottom-tab.active::after {
+  content: "";
+
+  position: absolute;
+
+  left: 35%;
+  right: 35%;
+  bottom: 3px;
+
+  height: 2px;
+
+  border-radius:
+    999px;
+
+  background:
+    #ffffff;
+}
+
+
+/* 下部タブに本文が隠れないようにする */
+
+.app {
+  padding-bottom:
+    110px;
+}
+
+
+/* ==================================================
+   LifeLog UI Refresh
+   ヘッダー / 予定 / 下部タブ
+================================================== */
+
+
+/* --------------------------------
+   全体
+-------------------------------- */
+
+body {
+  background:
+    linear-gradient(
+      180deg,
+      #101217 0%,
+      #0d0f13 100%
+    );
+
+  color: #f4f5f7;
+}
+
+
+.app {
+  width: min(
+    calc(100% - 28px),
+    620px
+  );
+
+  margin: 0 auto;
+
+  padding-top: 28px;
+  padding-bottom: 120px;
+}
+
+
+
+/* --------------------------------
+   ヘッダー
+-------------------------------- */
+
+.header {
+  display: flex;
+
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 18px;
+
+  margin-bottom: 26px;
+
+  padding: 0 2px;
+}
+
+
+.header h1 {
+  margin: 0;
+
+  font-size: 27px;
+  font-weight: 750;
+
+  letter-spacing: -0.8px;
+
+  color: #ffffff;
+}
+
+
+
+/* --------------------------------
+   日付ナビ
+-------------------------------- */
+
+.date-navigation {
+  display: flex;
+
+  align-items: center;
+
+  gap: 6px;
+
+  padding: 4px;
+
+  background: #181b21;
+
+  border: 1px solid #242830;
+  border-radius: 14px;
+}
+
+
+.date-button,
+.today-button {
+  min-height: 36px;
+
+  border: none;
+  border-radius: 10px;
+
+  background: transparent;
+
+  color: #a5abb6;
+
+  font-size: 13px;
+
+  cursor: pointer;
+
+  transition:
+    background 0.15s ease,
+    color 0.15s ease,
+    transform 0.15s ease;
+}
+
+
+.date-button {
+  width: 36px;
+
+  padding: 0;
+}
+
+
+.today-button {
+  padding: 0 10px;
+
+  font-weight: 600;
+}
+
+
+.date-button:hover,
+.today-button:hover {
+  background: #242832;
+
+  color: #ffffff;
+}
+
+
+.date-button:active,
+.today-button:active {
+  transform: scale(0.95);
+}
+
+
+.date-button:disabled {
+  opacity: 0.25;
+
+  cursor: default;
+}
+
+
+.date {
+  min-width: 58px;
+
+  text-align: center;
+
+  color: #c2c6cf;
+
+  font-size: 13px;
+  font-weight: 500;
+}
+
+
+
+/* --------------------------------
+   タブパネル
+-------------------------------- */
+
+.tab-panel {
+  display: none;
+}
+
+
+.tab-panel.active {
+  display: block;
+
+  animation:
+    tabFadeIn
+    0.18s
+    ease;
+}
+
+
+@keyframes tabFadeIn {
+
+  from {
+    opacity: 0;
+
+    transform:
+      translateY(4px);
+  }
+
+  to {
+    opacity: 1;
+
+    transform:
+      translateY(0);
+  }
+
+}
+
+
+
+/* --------------------------------
+   予定カード
+-------------------------------- */
+
+#scheduleTabPanel .card {
+  margin-bottom: 0;
+
+  padding: 8px 18px 18px;
+
+  background: #171a20;
+
+  border:
+    1px solid
+    #242830;
+
+  border-radius: 22px;
+
+  box-shadow:
+    0 12px 35px
+    rgba(
+      0,
+      0,
+      0,
+      0.18
+    );
+}
+
+
+
+/* --------------------------------
+   予定リスト
+-------------------------------- */
+
+.schedule-list {
+  display: flex;
+
+  flex-direction: column;
+}
+
+
+
+/* --------------------------------
+   予定1件
+-------------------------------- */
+
+.schedule-item {
+  display: grid;
+
+  grid-template-columns:
+    38px
+    58px
+    minmax(0, 1fr)
+    58px
+    32px;
+
+  align-items: center;
+
+  gap: 4px;
+
+  min-height: 68px;
+
+  border-bottom:
+    1px solid
+    #242830;
+}
+
+
+.schedule-item:last-child {
+  border-bottom: none;
+}
+
+
+
+/* --------------------------------
+   チェックボタン
+-------------------------------- */
+
+.check-button {
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  width: 27px;
+  height: 27px;
+
+  padding: 0;
+
+  background: transparent;
+
+  border:
+    2px solid
+    #4b5260;
+
+  border-radius: 50%;
+
+  color: #111318;
+
+  font-size: 14px;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  transition:
+    background 0.18s ease,
+    border-color 0.18s ease,
+    transform 0.15s ease;
+}
+
+
+.check-button:hover {
+  border-color: #8c96ff;
+}
+
+
+.check-button:active {
+  transform: scale(0.9);
+}
+
+
+.schedule-item.completed
+.check-button {
+  background: #8c96ff;
+
+  border-color: #8c96ff;
+
+  color: #111318;
+}
+
+
+
+/* --------------------------------
+   予定時間
+-------------------------------- */
+
+.plan-time {
+  color: #777f8d;
+
+  font-size: 13px;
+
+  font-variant-numeric:
+    tabular-nums;
+}
+
+
+
+/* --------------------------------
+   予定名
+-------------------------------- */
+
+.task-name {
+  overflow: hidden;
+
+  color: #f2f3f5;
+
+  font-size: 15px;
+  font-weight: 500;
+
+  white-space: nowrap;
+
+  text-overflow: ellipsis;
+
+  transition:
+    color 0.18s ease,
+    opacity 0.18s ease;
+}
+
+
+.schedule-item.completed
+.task-name {
+  color: #646b77;
+
+  text-decoration: line-through;
+
+  opacity: 0.7;
+}
+
+
+
+/* --------------------------------
+   実行時間
+-------------------------------- */
+
+.actual-time {
+  text-align: right;
+
+  color: #626a77;
+
+  font-size: 12px;
+
+  font-variant-numeric:
+    tabular-nums;
+}
+
+
+
+/* --------------------------------
+   削除ボタン
+-------------------------------- */
+
+.delete-button {
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  width: 30px;
+  height: 30px;
+
+  padding: 0;
+
+  background: transparent;
+
+  border: none;
+  border-radius: 9px;
+
+  color: #555c68;
+
+  font-size: 18px;
+
+  cursor: pointer;
+
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+
+
+.delete-button:hover {
+  background: #302025;
+
+  color: #ff747f;
+}
+
+
+
+/* --------------------------------
+   予定追加
+-------------------------------- */
+
+.add-button {
+  width: 100%;
+
+  margin-top: 14px;
+
+  padding: 13px 16px;
+
+  background: #20242c;
+
+  border:
+    1px solid
+    #292e38;
+
+  border-radius: 13px;
+
+  color: #aeb4c0;
+
+  font-size: 14px;
+  font-weight: 550;
+
+  cursor: pointer;
+
+  transition:
+    background 0.15s ease,
+    color 0.15s ease,
+    transform 0.15s ease;
+}
+
+
+.add-button:hover {
+  background: #282d37;
+
+  color: #ffffff;
+}
+
+
+.add-button:active {
+  transform: scale(0.985);
+}
+
+
+.add-button:disabled {
+  opacity: 0.35;
+
+  cursor: default;
+}
+
+
+
+/* --------------------------------
+   下部タブ
+-------------------------------- */
+
+.bottom-tabs {
+  position: fixed;
+
+  left: 50%;
+  bottom: 0;
+
+  transform:
+    translateX(-50%);
+
+  width: min(
+    100%,
+    620px
+  );
+
+  display: grid;
+
+  grid-template-columns:
+    1fr
+    1fr;
+
+  padding:
+    8px
+    14px
+    calc(
+      8px +
+      env(
+        safe-area-inset-bottom
+      )
+    );
+
+  background:
+    rgba(
+      18,
+      20,
+      25,
+      0.88
+    );
+
+  border-top:
+    1px solid
+    rgba(
+      255,
+      255,
+      255,
+      0.07
+    );
+
+  backdrop-filter:
+    blur(20px);
+
+  -webkit-backdrop-filter:
+    blur(20px);
+
+  z-index: 100;
+}
+
+
+
+/* --------------------------------
+   下部タブボタン
+-------------------------------- */
+
+.bottom-tab {
+  position: relative;
+
+  min-height: 48px;
+
+  padding: 0;
+
+  background: transparent;
+
+  border: none;
+
+  color: #686f7b;
+
+  font-size: 13px;
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition:
+    color 0.18s ease;
+}
+
+
+.bottom-tab:hover {
+  color: #b8bdc7;
+}
+
+
+.bottom-tab.active {
+  color: #ffffff;
+}
+
+
+
+/* 選択中のライン */
+
+.bottom-tab.active::after {
+  content: "";
+
+  position: absolute;
+
+  left: 50%;
+  bottom: 2px;
+
+  width: 28px;
+  height: 3px;
+
+  transform:
+    translateX(-50%);
+
+  background: #8c96ff;
+
+  border-radius: 999px;
+}
+
+
+
+/* --------------------------------
+   スマホ
+-------------------------------- */
+
+@media (
+  max-width: 520px
+) {
+
+  .app {
+    width:
+      calc(
+        100% - 22px
+      );
+
+    padding-top: 20px;
+  }
+
+
+  .header {
+    align-items:
+      flex-start;
+
+    flex-direction:
+      column;
+
+    gap: 14px;
+
+    margin-bottom: 20px;
+  }
+
+
+  .header h1 {
+    font-size: 25px;
+  }
+
+
+  .date-navigation {
+    width: 100%;
+
+    display: grid;
+
+    grid-template-columns:
+      38px
+      1fr
+      auto
+      38px;
+  }
+
+
+  .date-button {
+    width: 100%;
+  }
+
+
+  .today-button {
+    width: 100%;
+  }
+
+
+  .date {
+    min-width: 0;
+  }
+
+
+  #scheduleTabPanel .card {
+    padding:
+      6px
+      14px
+      16px;
+
+    border-radius: 19px;
+  }
+
+
+  .schedule-item {
+    grid-template-columns:
+      34px
+      52px
+      minmax(0, 1fr)
+      48px
+      28px;
+
+    min-height: 65px;
+
+    gap: 3px;
+  }
+
+
+  .task-name {
+    font-size: 14px;
+  }
+
+
+  .plan-time {
+    font-size: 12px;
+  }
+
+
+  .actual-time {
+    font-size: 11px;
+  }
+
+}
+
+#scheduleTabPanel .card + .card {
+  margin-top: 18px;
+}
+
+/* --------------------------------
+   今月の残り日数
+-------------------------------- */
+
+.app-title-area {
+  display: flex;
+  align-items: baseline;
+
+  gap: 12px;
+}
+
+
+.month-progress {
+  color: #737b89;
+
+  font-size: 12px;
+  font-weight: 500;
+
+  white-space: nowrap;
+}
+
+/* ==================================================
+   実績タブ UI Refresh
+================================================== */
+
+
+/* --------------------------------
+   実績タブ全体
+-------------------------------- */
+
+#resultTabPanel {
+  display: none;
+}
+
+
+#resultTabPanel.active {
+  display: block;
+}
+
+
+#resultTabPanel .card {
+  margin-bottom: 18px;
+
+  padding: 20px;
+
+  background: #171a20;
+
+  border:
+    1px solid
+    #242830;
+
+  border-radius: 22px;
+
+  box-shadow:
+    0 12px 35px
+    rgba(
+      0,
+      0,
+      0,
+      0.15
+    );
+}
+
+
+/* --------------------------------
+   カード見出し
+-------------------------------- */
+
+#resultTabPanel .card h2 {
+  margin:
+    0
+    0
+    18px;
+
+  color: #ffffff;
+
+  font-size: 17px;
+  font-weight: 650;
+
+  letter-spacing: -0.3px;
+}
+
+
+/* --------------------------------
+   今日の実績
+-------------------------------- */
+
+.result-row {
+  display: flex;
+
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 14px;
+
+  padding: 12px 0;
+
+  color: #8e95a1;
+
+  font-size: 14px;
+}
+
+
+.result-time-row {
+  border-bottom:
+    1px solid
+    #242830;
+}
+
+
+.result-time-input {
+  width: 115px;
+
+  padding: 9px 11px;
+
+  background: #20242c;
+
+  border:
+    1px solid
+    #2b303a;
+
+  border-radius: 10px;
+
+  color: #ffffff;
+
+  font-size: 13px;
+
+  outline: none;
+
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease;
+}
+
+
+.result-time-input:focus {
+  background: #242933;
+
+  border-color: #8c96ff;
+}
+
+
+/* --------------------------------
+   実績入力
+-------------------------------- */
+
+.activity-results {
+  margin-top: 12px;
+}
+
+
+.activity-row {
+  display: grid;
+
+  grid-template-columns:
+    minmax(0, 1fr)
+    88px
+    24px
+    32px;
+
+  align-items: center;
+
+  gap: 8px;
+
+  padding: 7px 0;
+}
+
+
+.activity-name-input,
+.activity-minutes-input {
+  min-width: 0;
+
+  padding: 10px 11px;
+
+  background: #20242c;
+
+  border:
+    1px solid
+    #2b303a;
+
+  border-radius: 10px;
+
+  color: #f3f4f6;
+
+  font-size: 13px;
+
+  outline: none;
+}
+
+
+.activity-name-input:focus,
+.activity-minutes-input:focus {
+  border-color: #8c96ff;
+}
+
+
+.activity-minutes-input {
+  width: 88px;
+
+  text-align: right;
+}
+
+
+.activity-minute-label {
+  color: #737b88;
+
+  font-size: 12px;
+}
+
+
+.activity-delete-button {
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  width: 30px;
+  height: 30px;
+
+  padding: 0;
+
+  background: transparent;
+
+  border: none;
+  border-radius: 9px;
+
+  color: #555c68;
+
+  font-size: 18px;
+
+  cursor: pointer;
+}
+
+
+.activity-delete-button:hover {
+  background: #302025;
+
+  color: #ff747f;
+}
+
+
+/* --------------------------------
+   実績追加
+-------------------------------- */
+
+.add-activity-button {
+  width: 100%;
+
+  margin-top: 14px;
+
+  padding: 13px 16px;
+
+  background: #20242c;
+
+  border:
+    1px solid
+    #292e38;
+
+  border-radius: 13px;
+
+  color: #aeb4c0;
+
+  font-size: 14px;
+  font-weight: 550;
+
+  cursor: pointer;
+
+  transition:
+    background 0.15s ease,
+    color 0.15s ease,
+    transform 0.15s ease;
+}
+
+
+.add-activity-button:hover {
+  background: #282d37;
+
+  color: #ffffff;
+}
+
+
+.add-activity-button:active {
+  transform: scale(0.985);
+}
+
+
+/* --------------------------------
+   達成数
+-------------------------------- */
+
+.achievement {
+  margin-top: 16px;
+
+  padding-top: 18px;
+
+  border-top:
+    1px solid
+    #2b3038;
+}
+
+
+.achievement strong {
+  color: #ffffff;
+
+  font-size: 18px;
+}
+
+
+/* --------------------------------
+   支出
+-------------------------------- */
+
+.expense-results {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 6px;
+}
+
+
+.expense-row {
+  display: grid;
+
+  grid-template-columns:
+    minmax(0, 1fr)
+    88px
+    24px
+    32px;
+
+  align-items: center;
+
+  gap: 8px;
+
+  padding: 7px 0;
+}
+
+
+.expense-name-input,
+.expense-amount-input {
+  min-width: 0;
+
+  padding: 10px 11px;
+
+  background: #20242c;
+
+  border:
+    1px solid
+    #2b303a;
+
+  border-radius: 10px;
+
+  color: #f3f4f6;
+
+  font-size: 13px;
+
+  outline: none;
+}
+
+
+.expense-name-input:focus,
+.expense-amount-input:focus {
+  border-color: #8c96ff;
+}
+
+
+.expense-amount-input {
+  width: 88px;
+
+  text-align: right;
+}
+
+
+.expense-yen-label {
+  color: #737b88;
+
+  font-size: 12px;
+}
+
+
+.expense-delete-button {
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  width: 30px;
+  height: 30px;
+
+  padding: 0;
+
+  background: transparent;
+
+  border: none;
+  border-radius: 9px;
+
+  color: #555c68;
+
+  font-size: 18px;
+
+  cursor: pointer;
+}
+
+
+.expense-delete-button:hover {
+  background: #302025;
+
+  color: #ff747f;
+}
+
+
+/* --------------------------------
+   今日の合計
+-------------------------------- */
+
+.expense-total-row {
+  display: flex;
+
+  align-items: center;
+  justify-content: space-between;
+
+  margin-top: 16px;
+
+  padding-top: 18px;
+
+  border-top:
+    1px solid
+    #2b3038;
+
+  color: #8e95a1;
+
+  font-size: 14px;
+}
+
+
+.expense-total {
+  color: #ffffff;
+
+  font-size: 19px;
+  font-weight: 700;
+}
+
+
+/* --------------------------------
+   支出追加
+-------------------------------- */
+
+.add-expense-button {
+  width: 100%;
+
+  margin-top: 14px;
+
+  padding: 13px 16px;
+
+  background: #20242c;
+
+  border:
+    1px solid
+    #292e38;
+
+  border-radius: 13px;
+
+  color: #aeb4c0;
+
+  font-size: 14px;
+  font-weight: 550;
+
+  cursor: pointer;
+}
+
+
+.add-expense-button:hover {
+  background: #282d37;
+
+  color: #ffffff;
+}
+
+
+/* --------------------------------
+   今日の一言
+-------------------------------- */
+
+.daily-note-input {
+  width: 100%;
+
+  padding: 13px 14px;
+
+  background: #20242c;
+
+  border:
+    1px solid
+    #2b303a;
+
+  border-radius: 12px;
+
+  color: #ffffff;
+
+  font-size: 14px;
+
+  outline: none;
+}
+
+
+.daily-note-input:focus {
+  border-color: #8c96ff;
+}
+
+
+.daily-note-input::placeholder {
+  color: #666e7a;
+}
+
+
+/* --------------------------------
+   今日の写真
+-------------------------------- */
+
+.daily-photo-preview {
+  width: 100%;
+
+  min-height: 180px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  background: #101318;
+
+  border:
+    1px solid
+    #262b34;
+
+  border-radius: 15px;
+
+  overflow: hidden;
+}
+
+
+.daily-photo-preview img {
+  display: block;
+
+  width: 100%;
+
+  max-height: 440px;
+
+  object-fit: contain;
+}
+
+
+.photo-empty {
+  color: #676f7c;
+
+  font-size: 13px;
+}
+
+
+.photo-buttons {
+  display: grid;
+
+  grid-template-columns:
+    1fr
+    1fr;
+
+  gap: 10px;
+
+  margin-top: 12px;
+}
+
+
+.photo-button {
+  padding: 12px;
+
+  background: #20242c;
+
+  border:
+    1px solid
+    #292e38;
+
+  border-radius: 12px;
+
+  color: #aeb4c0;
+
+  font-size: 13px;
+
+  cursor: pointer;
+}
+
+
+.photo-button:hover {
+  background: #282d37;
+
+  color: #ffffff;
+}
+
+
+.photo-delete-button {
+  color: #ff7c85;
+}
+
+
+/* --------------------------------
+   データ管理
+-------------------------------- */
+
+.backup-description {
+  margin:
+    -4px
+    0
+    16px;
+
+  color: #737b88;
+
+  font-size: 12px;
+
+  line-height: 1.6;
+}
+
+
+.backup-buttons {
+  display: grid;
+
+  grid-template-columns:
+    1fr
+    1fr;
+
+  gap: 10px;
+}
+
+
+.backup-button {
+  padding: 12px;
+
+  background: #20242c;
+
+  border:
+    1px solid
+    #292e38;
+
+  border-radius: 12px;
+
+  color: #aeb4c0;
+
+  font-size: 13px;
+
+  cursor: pointer;
+
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+
+
+.backup-button:hover {
+  background: #282d37;
+
+  color: #ffffff;
+}
+
+
+/* --------------------------------
+   スマホ調整
+-------------------------------- */
+
+@media (
+  max-width: 520px
+) {
+
+  #resultTabPanel .card {
+    padding: 17px;
+
+    border-radius: 19px;
+  }
+
+
+  .activity-row,
+  .expense-row {
+    grid-template-columns:
+      minmax(0, 1fr)
+      72px
+      20px
+      28px;
+
+    gap: 6px;
+  }
+
+
+  .activity-minutes-input,
+  .expense-amount-input {
+    width: 72px;
+
+    padding-left: 7px;
+    padding-right: 7px;
+  }
+
+
+  .result-time-input {
+    width: 105px;
+  }
+
+}
