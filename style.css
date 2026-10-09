@@ -2491,3 +2491,59 @@ body {
   }
 
 }
+
+/* 月間まとめ */
+
+.monthly-card {
+  margin-top: 18px;
+}
+
+.monthly-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  margin-bottom: 16px;
+}
+
+.monthly-header h2 {
+  margin: 0;
+
+  font-size: 17px;
+  font-weight: 650;
+
+  color: #ffffff;
+}
+
+.monthly-date-range {
+  color: #737b88;
+
+  font-size: 12px;
+}
+
+.monthly-expense-section {
+  margin-top: 18px;
+
+  padding-top: 18px;
+
+  border-top: 1px solid #2b3038;
+}
+
+.monthly-expense-total-row {
+  display: flex;
+
+  align-items: center;
+  justify-content: space-between;
+
+  margin-bottom: 10px;
+
+  color: #8e95a1;
+
+  font-size: 14px;
+}
+
+.monthly-expense-total-row strong {
+  color: #ffffff;
+
+  font-size: 18px;
+}

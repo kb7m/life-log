@@ -1,7 +1,9 @@
 <!DOCTYPE html>
+
 <html lang="ja">
 
 <head>
+
   <meta charset="UTF-8">
 
   <meta
@@ -30,18 +32,23 @@
     rel="apple-touch-icon"
     href="icon-192.png"
   >
+
 </head>
 
 
 <body>
 
+
   <main class="app">
 
 
-    <!-- ヘッダー -->
+    <!-- ================================
+         ヘッダー
+    ================================= -->
+
     <header class="header">
 
-      
+
       <div class="app-title-area">
 
         <h1>
@@ -49,16 +56,16 @@
         </h1>
 
         <span
-
-        id="monthProgress"
-        class="month-progress"
-
+          id="monthProgress"
+          class="month-progress"
         ></span>
 
       </div>
 
 
+
       <div class="date-navigation">
+
 
         <button
           id="prevDateButton"
@@ -92,116 +99,193 @@
           →
         </button>
 
+
       </div>
+
 
     </header>
 
 
 
-   
-    <!-- ================================  
-    予定タブ
+
+    <!-- ================================
+         予定タブ
     ================================= -->
 
-
     <div
-  
-    id="scheduleTabPanel"
-  
-    class="tab-panel active"
-
+      id="scheduleTabPanel"
+      class="tab-panel active"
     >
 
-  
-    <!-- 今日の予定 -->
-  
-    <section class="card">
 
- 
-      <div
- 
-      id="scheduleList"
- 
-      class="schedule-list"
- 
-      ></div>
+      <!-- ================================
+           今日の予定
+      ================================= -->
+
+      <section class="card schedule-card">
 
 
- 
-      <button
- 
-      id="addButton"
- 
-      class="add-button"
- 
-      type="button"
- 
-      >
- 
-      ＋ 予定を追加
- 
-    </button>
+        <div
+          id="scheduleList"
+          class="schedule-list"
+        ></div>
 
 
+        <button
+          id="addButton"
+          class="add-button"
+          type="button"
+        >
+          ＋ 予定を追加
+        </button>
 
-  </section>
+
+      </section>
 
 
 
 
-  <!-- 週間まとめ -->
+      <!-- ================================
+           週間まとめ
+      ================================= -->
 
-  <section class="card weekly-card">
-
-    <div class="weekly-header">
-
-      <h2>
-        週間まとめ
-      </h2>
+      <section class="card weekly-card">
 
 
-      <span
-        id="weeklyDateRange"
-        class="weekly-date-range"
-      ></span>
+        <div class="weekly-header">
+
+
+          <h2>
+            週間まとめ
+          </h2>
+
+
+          <span
+            id="weeklyDateRange"
+            class="weekly-date-range"
+          ></span>
+
+
+        </div>
+
+
+
+        <!-- 週間実績 -->
+
+        <div
+          id="weeklyActivitySummary"
+          class="weekly-activity-summary"
+        ></div>
+
+
+
+        <!-- 週間支出 -->
+
+        <div class="weekly-expense-section">
+
+
+          <div class="weekly-expense-total-row">
+
+
+            <span>
+              週間支出
+            </span>
+
+
+            <strong id="weeklyExpenseTotal">
+              0円
+            </strong>
+
+
+          </div>
+
+
+
+          <div
+            id="weeklyExpenseSummary"
+            class="weekly-expense-summary"
+          ></div>
+
+
+        </div>
+
+
+      </section>
+
+
+
+
+      <!-- ================================
+           月間まとめ
+      ================================= -->
+
+      <section class="card monthly-card">
+
+
+        <div class="monthly-header">
+
+
+          <h2>
+            月間まとめ
+          </h2>
+
+
+          <span
+            id="monthlyDateRange"
+            class="monthly-date-range"
+          ></span>
+
+
+        </div>
+
+
+
+        <!-- 月間実績 -->
+
+        <div
+          id="monthlyActivitySummary"
+          class="monthly-activity-summary"
+        ></div>
+
+
+
+        <!-- 月間支出 -->
+
+        <div class="monthly-expense-section">
+
+
+          <div class="monthly-expense-total-row">
+
+
+            <span>
+              月間支出
+            </span>
+
+
+            <strong id="monthlyExpenseTotal">
+              0円
+            </strong>
+
+
+          </div>
+
+
+
+          <div
+            id="monthlyExpenseSummary"
+            class="monthly-expense-summary"
+          ></div>
+
+
+        </div>
+
+
+      </section>
+
 
     </div>
 
 
-    <!-- 週間実績 -->
-    <div
-      id="weeklyActivitySummary"
-      class="weekly-activity-summary"
-    ></div>
-
-
-    <!-- 週間支出 -->
-    <div class="weekly-expense-section">
-
-      <div class="weekly-expense-total-row">
-
-        <span>
-          週間支出
-        </span>
-
-
-        <strong id="weeklyExpenseTotal">
-          0円
-        </strong>
-
-      </div>
-
-
-      <div
-        id="weeklyExpenseSummary"
-        class="weekly-expense-summary"
-      ></div>
-
-    </div>
-
-  </section>
-
-</div>
 
 
     <!-- ================================
@@ -214,16 +298,23 @@
     >
 
 
-      <!-- 今日の実績 -->
+      <!-- ================================
+           今日の実績
+      ================================= -->
+
       <section class="card result-card">
+
 
         <h2>
           今日の実績
         </h2>
 
 
+
         <!-- 起床 -->
+
         <div class="result-row result-time-row">
+
 
           <span>
             今日の起床
@@ -236,11 +327,15 @@
             class="result-time-input"
           >
 
+
         </div>
 
 
+
         <!-- 就寝 -->
+
         <div class="result-row result-time-row">
+
 
           <span>
             今日の就寝
@@ -253,17 +348,22 @@
             class="result-time-input"
           >
 
+
         </div>
 
 
+
         <!-- 実績一覧 -->
+
         <div
           id="activityResults"
           class="activity-results"
         ></div>
 
 
+
         <!-- 実績追加 -->
+
         <button
           id="addActivityButton"
           class="add-activity-button"
@@ -273,8 +373,11 @@
         </button>
 
 
+
         <!-- 達成数 -->
+
         <div class="result-row achievement">
+
 
           <span>
             達成
@@ -285,18 +388,26 @@
             0 / 0
           </strong>
 
+
         </div>
+
 
       </section>
 
 
 
-      <!-- 今日の支出 -->
+
+      <!-- ================================
+           今日の支出
+      ================================= -->
+
       <section class="card expense-card">
+
 
         <h2>
           今日の支出
         </h2>
+
 
 
         <div
@@ -305,7 +416,9 @@
         ></div>
 
 
+
         <div class="expense-total-row">
+
 
           <span>
             今日の合計
@@ -319,7 +432,9 @@
             0円
           </strong>
 
+
         </div>
+
 
 
         <button
@@ -330,12 +445,18 @@
           ＋ 支出を追加
         </button>
 
+
       </section>
 
 
 
-      <!-- 今日の一言 -->
+
+      <!-- ================================
+           今日の一言
+      ================================= -->
+
       <section class="card note-card">
+
 
         <h2>
           今日の一言
@@ -350,16 +471,23 @@
           maxlength="100"
         >
 
+
       </section>
 
 
 
-      <!-- 今日の写真 -->
+
+      <!-- ================================
+           今日の写真
+      ================================= -->
+
       <section class="card photo-card">
+
 
         <h2>
           今日の写真
         </h2>
+
 
 
         <div
@@ -374,6 +502,7 @@
         </div>
 
 
+
         <input
           type="file"
           id="dailyPhotoInput"
@@ -382,7 +511,9 @@
         >
 
 
+
         <div class="photo-buttons">
+
 
           <button
             id="selectPhotoButton"
@@ -402,19 +533,26 @@
             写真を削除
           </button>
 
+
         </div>
+
 
       </section>
 
 
 
 
-      <!-- データ管理 -->
+      <!-- ================================
+           データ管理
+      ================================= -->
+
       <section class="card backup-card">
+
 
         <h2>
           データ管理
         </h2>
+
 
 
         <p class="backup-description">
@@ -422,7 +560,9 @@
         </p>
 
 
+
         <div class="backup-buttons">
+
 
           <button
             id="exportBackupButton"
@@ -441,7 +581,9 @@
             復元
           </button>
 
+
         </div>
+
 
 
         <input
@@ -451,12 +593,15 @@
           hidden
         >
 
+
       </section>
 
 
     </div>
 
+
   </main>
+
 
 
 
@@ -465,6 +610,7 @@
   ================================= -->
 
   <nav class="bottom-tabs">
+
 
     <button
       id="scheduleTabButton"
@@ -483,12 +629,18 @@
       実績
     </button>
 
+
   </nav>
 
 
 
-  <!-- LifeLog本体 -->
+
+  <!-- ================================
+       LifeLog本体
+  ================================= -->
+
   <script src="script.js"></script>
+
 
 
 
@@ -498,20 +650,24 @@
 
   <script>
 
+
     const scheduleTabButton =
       document.getElementById(
         "scheduleTabButton"
       );
+
 
     const resultTabButton =
       document.getElementById(
         "resultTabButton"
       );
 
+
     const scheduleTabPanel =
       document.getElementById(
         "scheduleTabPanel"
       );
+
 
     const resultTabPanel =
       document.getElementById(
@@ -519,9 +675,11 @@
       );
 
 
+
     function switchMainTab(
       tab
     ) {
+
 
       const isSchedule =
         tab === "schedule";
@@ -554,7 +712,9 @@
           !isSchedule
         );
 
+
     }
+
 
 
     scheduleTabButton
@@ -570,6 +730,7 @@
       );
 
 
+
     resultTabButton
       .addEventListener(
         "click",
@@ -582,7 +743,9 @@
         }
       );
 
+
   </script>
+
 
 
 
@@ -592,13 +755,16 @@
 
   <script>
 
+
     if (
       "serviceWorker" in navigator
     ) {
 
+
       window.addEventListener(
         "load",
         () => {
+
 
           navigator.serviceWorker
             .register(
@@ -607,20 +773,26 @@
             .catch(
               error => {
 
+
                 console.error(
                   "Service Worker登録失敗:",
                   error
                 );
 
+
               }
             );
+
 
         }
       );
 
+
     }
 
+
   </script>
+
 
 </body>
 

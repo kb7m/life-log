@@ -2288,6 +2288,8 @@ function updateWeeklyExpenseSummary() {
     }
   );
 
+  updateMonthlySummary();
+
 }
 
 
@@ -2359,6 +2361,8 @@ function updateWeeklySummary() {
     Object.entries(
       totals
     );
+    updateMonthlySummary();
+
 
 
   if (
@@ -2422,6 +2426,457 @@ function updateWeeklySummary() {
 
 }
 
+
+// --------------------------------
+// 月間の実績を集計
+// --------------------------------
+
+function calculateMonthlyActivityTotals(
+  dateKey
+) {
+
+  const date =
+    dateKeyToDate(
+      dateKey
+    );
+
+  const year =
+    date.getFullYear();
+
+  const month =
+    date.getMonth();
+
+  const lastDay =
+    new Date(
+      year,
+      month + 1,
+      0
+    ).getDate();
+
+
+  const totals =
+    {};
+
+
+  for (
+    let day = 1;
+    day <= lastDay;
+    day++
+  ) {
+
+    const currentDate =
+      new Date(
+        year,
+        month,
+        day
+      );
+
+
+    const key =
+      formatDateKey(
+        currentDate
+      );
+
+
+    const result =
+      allResultData[
+        key
+      ];
+
+
+    if (
+      !result ||
+      !Array.isArray(
+        result.activities
+      )
+    ) {
+
+      continue;
+
+    }
+
+
+    result.activities.forEach(
+      activity => {
+
+        const name =
+          String(
+            activity.name ||
+            ""
+          ).trim();
+
+
+        const minutes =
+          Number(
+            activity.minutes
+          ) || 0;
+
+
+        if (
+          name === "" ||
+          name === "起床" ||
+          name === "就寝" ||
+          minutes <= 0
+        ) {
+
+          return;
+
+        }
+
+
+        if (
+          !totals[name]
+        ) {
+
+          totals[name] =
+            0;
+
+        }
+
+
+        totals[name] +=
+          minutes;
+
+      }
+    );
+
+  }
+
+
+  return totals;
+
+}
+
+
+
+// --------------------------------
+// 月間支出を集計
+// --------------------------------
+
+function calculateMonthlyExpenseSummary(
+  dateKey
+) {
+
+  const date =
+    dateKeyToDate(
+      dateKey
+    );
+
+  const year =
+    date.getFullYear();
+
+  const month =
+    date.getMonth();
+
+  const lastDay =
+    new Date(
+      year,
+      month + 1,
+      0
+    ).getDate();
+
+
+  let total =
+    0;
+
+  const breakdown =
+    {};
+
+
+  for (
+    let day = 1;
+    day <= lastDay;
+    day++
+  ) {
+
+    const currentDate =
+      new Date(
+        year,
+        month,
+        day
+      );
+
+
+    const key =
+      formatDateKey(
+        currentDate
+      );
+
+
+    const result =
+      allResultData[
+        key
+      ];
+
+
+    if (
+      !result ||
+      !Array.isArray(
+        result.expenses
+      )
+    ) {
+
+      continue;
+
+    }
+
+
+    result.expenses.forEach(
+      expense => {
+
+        const name =
+          String(
+            expense.name ||
+            ""
+          ).trim();
+
+
+        const amount =
+          Number(
+            expense.amount
+          ) || 0;
+
+
+        if (
+          name === "" ||
+          amount <= 0
+        ) {
+
+          return;
+
+        }
+
+
+        total +=
+          amount;
+
+
+        if (
+          !breakdown[name]
+        ) {
+
+          breakdown[name] =
+            0;
+
+        }
+
+
+        breakdown[name] +=
+          amount;
+
+      }
+    );
+
+  }
+
+
+  return {
+    total,
+    breakdown
+  };
+
+}
+
+
+
+// --------------------------------
+// 月間まとめ表示
+// --------------------------------
+
+function updateMonthlySummary() {
+
+  const activityContainer =
+    document.getElementById(
+      "monthlyActivitySummary"
+    );
+
+  const expenseContainer =
+    document.getElementById(
+      "monthlyExpenseSummary"
+    );
+
+  const expenseTotal =
+    document.getElementById(
+      "monthlyExpenseTotal"
+    );
+
+  const rangeElement =
+    document.getElementById(
+      "monthlyDateRange"
+    );
+
+
+  if (
+    !activityContainer ||
+    !expenseContainer ||
+    !expenseTotal ||
+    !rangeElement
+  ) {
+
+    return;
+
+  }
+
+
+  const date =
+    dateKeyToDate(
+      selectedDateKey
+    );
+
+
+  rangeElement.textContent =
+    `${date.getFullYear()}年${date.getMonth() + 1}月`;
+
+
+  // ----------------------------
+  // 実績
+  // ----------------------------
+
+  const totals =
+    calculateMonthlyActivityTotals(
+      selectedDateKey
+    );
+
+
+  const activities =
+    Object.entries(
+      totals
+    );
+
+
+  activities.sort(
+    (a, b) =>
+      b[1] - a[1]
+  );
+
+
+  activityContainer.innerHTML =
+    "";
+
+
+  if (
+    activities.length === 0
+  ) {
+
+    activityContainer.innerHTML = `
+      <p class="weekly-empty">
+        まだ実績がありません
+      </p>
+    `;
+
+  } else {
+
+    activities.forEach(
+      ([name, minutes]) => {
+
+        const row =
+          document.createElement(
+            "div"
+          );
+
+
+        row.className =
+          "weekly-activity-row";
+
+
+        row.innerHTML = `
+          <span class="weekly-activity-name">
+            ${escapeHtml(name)}
+          </span>
+
+          <strong class="weekly-activity-time">
+            ${formatDuration(minutes)}
+          </strong>
+        `;
+
+
+        activityContainer.appendChild(
+          row
+        );
+
+      }
+    );
+
+  }
+
+
+  // ----------------------------
+  // 支出
+  // ----------------------------
+
+  const expenseSummary =
+    calculateMonthlyExpenseSummary(
+      selectedDateKey
+    );
+
+
+  expenseTotal.textContent =
+    `${expenseSummary.total.toLocaleString()}円`;
+
+
+  const expenses =
+    Object.entries(
+      expenseSummary.breakdown
+    );
+
+
+  expenses.sort(
+    (a, b) =>
+      b[1] - a[1]
+  );
+
+
+  expenseContainer.innerHTML =
+    "";
+
+
+  if (
+    expenses.length === 0
+  ) {
+
+    expenseContainer.innerHTML = `
+      <p class="weekly-expense-empty">
+        まだ支出がありません
+      </p>
+    `;
+
+    return;
+
+  }
+
+
+  expenses.forEach(
+    ([name, amount]) => {
+
+      const row =
+        document.createElement(
+          "div"
+        );
+
+
+      row.className =
+        "weekly-expense-row";
+
+
+      row.innerHTML = `
+        <span class="weekly-expense-name">
+          ${escapeHtml(name)}
+        </span>
+
+        <strong class="weekly-expense-amount">
+          ${amount.toLocaleString()}円
+        </strong>
+      `;
+
+
+      expenseContainer.appendChild(
+        row
+      );
+
+    }
+  );
+
+}
 
 // --------------------------------
 // 起床・就寝・達成数を表示
