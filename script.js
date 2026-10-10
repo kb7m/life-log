@@ -50,7 +50,6 @@ const defaultSchedules = [
   }
 ];
 
-
 // --------------------------------
 // localStorageキー
 // --------------------------------
@@ -61,7 +60,7 @@ const STORAGE_KEY =
 const RESULT_STORAGE_KEY =
   "lifeLogResultData";
 
-  // --------------------------------
+// --------------------------------
 // 写真用 IndexedDB
 // --------------------------------
 
@@ -74,7 +73,7 @@ const PHOTO_DB_VERSION =
 const PHOTO_STORE_NAME =
   "dailyPhotos";
 
-  // --------------------------------
+// --------------------------------
 // IndexedDBを開く
 // --------------------------------
 
@@ -89,13 +88,11 @@ function openPhotoDB() {
           PHOTO_DB_VERSION
         );
 
-
       request.onupgradeneeded =
         event => {
 
           const db =
             event.target.result;
-
 
           if (
             !db.objectStoreNames.contains(
@@ -115,7 +112,6 @@ function openPhotoDB() {
 
         };
 
-
       request.onsuccess =
         event => {
 
@@ -124,7 +120,6 @@ function openPhotoDB() {
           );
 
         };
-
 
       request.onerror =
         event => {
@@ -159,7 +154,6 @@ function compressImage(
           file
         );
 
-
       image.onload =
         () => {
 
@@ -172,8 +166,6 @@ function compressImage(
           let height =
             image.naturalHeight;
 
-
-          // 大きい画像だけ縮小
           if (
             width > MAX_SIZE ||
             height > MAX_SIZE
@@ -184,7 +176,6 @@ function compressImage(
                 MAX_SIZE / width,
                 MAX_SIZE / height
               );
-
 
             width =
               Math.round(
@@ -198,12 +189,10 @@ function compressImage(
 
           }
 
-
           const canvas =
             document.createElement(
               "canvas"
             );
-
 
           canvas.width =
             width;
@@ -211,12 +200,10 @@ function compressImage(
           canvas.height =
             height;
 
-
           const context =
             canvas.getContext(
               "2d"
             );
-
 
           if (!context) {
 
@@ -234,7 +221,6 @@ function compressImage(
 
           }
 
-
           context.drawImage(
             image,
             0,
@@ -243,14 +229,12 @@ function compressImage(
             height
           );
 
-
           canvas.toBlob(
             blob => {
 
               URL.revokeObjectURL(
                 objectUrl
               );
-
 
               if (!blob) {
 
@@ -264,21 +248,16 @@ function compressImage(
 
               }
 
-
               resolve(
                 blob
               );
 
             },
-
             "image/jpeg",
-
             0.82
-
           );
 
         };
-
 
       image.onerror =
         () => {
@@ -295,7 +274,6 @@ function compressImage(
 
         };
 
-
       image.src =
         objectUrl;
 
@@ -304,7 +282,7 @@ function compressImage(
 
 }
 
-  // --------------------------------
+// --------------------------------
 // 写真保存
 // --------------------------------
 
@@ -315,7 +293,6 @@ async function saveDailyPhoto(
   const db =
     await openPhotoDB();
 
-
   return new Promise(
     (resolve, reject) => {
 
@@ -325,23 +302,18 @@ async function saveDailyPhoto(
           "readwrite"
         );
 
-
       const store =
         transaction.objectStore(
           PHOTO_STORE_NAME
         );
 
-
       store.put({
-
         date:
           selectedDateKey,
 
         image:
           file
-
       });
-
 
       transaction.oncomplete =
         () => {
@@ -351,7 +323,6 @@ async function saveDailyPhoto(
           resolve();
 
         };
-
 
       transaction.onerror =
         event => {
@@ -378,7 +349,6 @@ async function getDailyPhoto() {
   const db =
     await openPhotoDB();
 
-
   return new Promise(
     (resolve, reject) => {
 
@@ -388,18 +358,15 @@ async function getDailyPhoto() {
           "readonly"
         );
 
-
       const store =
         transaction.objectStore(
           PHOTO_STORE_NAME
         );
 
-
       const request =
         store.get(
           selectedDateKey
         );
-
 
       request.onsuccess =
         () => {
@@ -411,7 +378,6 @@ async function getDailyPhoto() {
           );
 
         };
-
 
       request.onerror =
         () => {
@@ -436,7 +402,6 @@ async function getDailyPhoto() {
 let currentPhotoUrl =
   null;
 
-
 async function renderDailyPhoto() {
 
   const container =
@@ -444,19 +409,16 @@ async function renderDailyPhoto() {
       "dailyPhotoPreview"
     );
 
-
   const deleteButton =
     document.getElementById(
       "deletePhotoButton"
     );
-
 
   if (!container) {
 
     return;
 
   }
-
 
   if (
     currentPhotoUrl
@@ -471,10 +433,8 @@ async function renderDailyPhoto() {
 
   }
 
-
   const photo =
     await getDailyPhoto();
-
 
   if (
     !photo
@@ -486,7 +446,6 @@ async function renderDailyPhoto() {
       </p>
     `;
 
-
     if (
       deleteButton
     ) {
@@ -496,17 +455,14 @@ async function renderDailyPhoto() {
 
     }
 
-
     return;
 
   }
-
 
   currentPhotoUrl =
     URL.createObjectURL(
       photo.image
     );
-
 
   container.innerHTML = `
     <img
@@ -514,7 +470,6 @@ async function renderDailyPhoto() {
       alt="今日の写真"
     >
   `;
-
 
   if (
     deleteButton
@@ -538,7 +493,6 @@ async function deleteDailyPhoto() {
       "この日の写真を削除しますか？"
     );
 
-
   if (
     !result
   ) {
@@ -547,10 +501,8 @@ async function deleteDailyPhoto() {
 
   }
 
-
   const db =
     await openPhotoDB();
-
 
   await new Promise(
     (resolve, reject) => {
@@ -561,7 +513,6 @@ async function deleteDailyPhoto() {
           "readwrite"
         );
 
-
       transaction
         .objectStore(
           PHOTO_STORE_NAME
@@ -569,7 +520,6 @@ async function deleteDailyPhoto() {
         .delete(
           selectedDateKey
         );
-
 
       transaction.oncomplete =
         () => {
@@ -579,7 +529,6 @@ async function deleteDailyPhoto() {
           resolve();
 
         };
-
 
       transaction.onerror =
         event => {
@@ -594,7 +543,6 @@ async function deleteDailyPhoto() {
 
     }
   );
-
 
   renderDailyPhoto();
 
@@ -617,13 +565,11 @@ const defaultActivityResults = [
   }
 ];
 
-
 // --------------------------------
 // LifeLogでは05:00を1日の区切りとして扱う
 // --------------------------------
 
 const DAY_BOUNDARY_HOUR = 5;
-
 
 // --------------------------------
 // 日付を YYYY-MM-DD にする
@@ -654,7 +600,6 @@ function formatDateKey(date) {
 
 }
 
-
 // --------------------------------
 // LifeLog上の「今日」を取得
 // 00:00〜04:59は前日扱い
@@ -684,7 +629,6 @@ function getLifeLogDateKey(
 
 }
 
-
 // --------------------------------
 // YYYY-MM-DD → Date
 // --------------------------------
@@ -708,7 +652,6 @@ function dateKeyToDate(dateKey) {
 
 }
 
-
 // --------------------------------
 // 初期予定をコピー
 // --------------------------------
@@ -723,7 +666,6 @@ function createDefaultSchedules() {
 
 }
 
-
 // --------------------------------
 // 初期実績をコピー
 // --------------------------------
@@ -737,7 +679,6 @@ function createDefaultActivityResults() {
   );
 
 }
-
 
 // --------------------------------
 // 1日分の実績データ
@@ -761,7 +702,6 @@ function createDefaultDailyResults() {
   };
 
 }
-
 
 // --------------------------------
 // 予定データを全部読み込む
@@ -799,7 +739,6 @@ function loadAllData() {
 
 }
 
-
 // --------------------------------
 // 実績データを全部読み込む
 // --------------------------------
@@ -836,7 +775,6 @@ function loadAllResultData() {
 
 }
 
-
 // --------------------------------
 // 予定データを全部保存
 // --------------------------------
@@ -851,7 +789,6 @@ function saveAllData() {
   );
 
 }
-
 
 // --------------------------------
 // 実績データを全部保存
@@ -868,7 +805,6 @@ function saveAllResultData() {
 
 }
 
-
 // --------------------------------
 // データ読み込み
 // --------------------------------
@@ -879,11 +815,8 @@ let allData =
 let allResultData =
   loadAllResultData();
 
-
-// 現在表示している日付
 let selectedDateKey =
   getLifeLogDateKey();
-
 
 // --------------------------------
 // 旧バージョンから予定を移行
@@ -896,7 +829,6 @@ const oldSchedulesRaw =
 
 let oldSchedules =
   null;
-
 
 if (
   oldSchedulesRaw
@@ -920,7 +852,6 @@ if (
 
 }
 
-
 if (
   !allData[selectedDateKey] &&
   Array.isArray(
@@ -940,7 +871,6 @@ if (
   );
 
 }
-
 
 // --------------------------------
 // 指定日の予定を取得
@@ -971,10 +901,8 @@ function loadSchedulesForDate(
 
 }
 
-
 // --------------------------------
 // 指定日の実績を取得
-// 旧形式も自動変換
 // --------------------------------
 
 function loadResultsForDate(
@@ -986,11 +914,6 @@ function loadResultsForDate(
       dateKey
     ];
 
-
-  // --------------------------------
-  // 実績データがまだない
-  // --------------------------------
-
   if (!data) {
 
     const newResults =
@@ -1001,7 +924,6 @@ function loadResultsForDate(
         dateKey
       ] || [];
 
-
     const wakeSchedule =
       daySchedules.find(
         schedule =>
@@ -1009,14 +931,12 @@ function loadResultsForDate(
           "起床"
       );
 
-
     const sleepSchedule =
       daySchedules.find(
         schedule =>
           schedule.name ===
           "就寝"
       );
-
 
     if (
       wakeSchedule?.actualTime
@@ -1027,7 +947,6 @@ function loadResultsForDate(
 
     }
 
-
     if (
       sleepSchedule?.actualTime
     ) {
@@ -1037,25 +956,16 @@ function loadResultsForDate(
 
     }
 
-
     allResultData[
       dateKey
     ] =
       newResults;
 
-
     saveAllResultData();
-
 
     return newResults;
 
   }
-
-
-  // --------------------------------
-  // 旧バージョンの実績
-  // 配列 → 新形式へ変換
-  // --------------------------------
 
   if (
     Array.isArray(
@@ -1068,7 +978,6 @@ function loadResultsForDate(
         dateKey
       ] || [];
 
-
     const wakeSchedule =
       daySchedules.find(
         schedule =>
@@ -1076,14 +985,12 @@ function loadResultsForDate(
           "起床"
       );
 
-
     const sleepSchedule =
       daySchedules.find(
         schedule =>
           schedule.name ===
           "就寝"
       );
-
 
     data = {
 
@@ -1100,21 +1007,14 @@ function loadResultsForDate(
 
     };
 
-
     allResultData[
       dateKey
     ] =
       data;
 
-
     saveAllResultData();
 
   }
-
-
-  // --------------------------------
-  // データ破損・旧データ対策
-  // --------------------------------
 
   if (
     typeof data !==
@@ -1128,7 +1028,6 @@ function loadResultsForDate(
 
   }
 
-
   if (
     typeof data.wakeTime !==
     "string"
@@ -1139,7 +1038,6 @@ function loadResultsForDate(
 
   }
 
-
   if (
     typeof data.sleepTime !==
     "string"
@@ -1149,7 +1047,6 @@ function loadResultsForDate(
       "";
 
   }
-
 
   if (
     !Array.isArray(
@@ -1162,11 +1059,6 @@ function loadResultsForDate(
 
   }
 
-
-  // --------------------------------
-  // 支出データがない旧データへの対応
-  // --------------------------------
-
   if (
     !Array.isArray(
       data.expenses
@@ -1178,29 +1070,22 @@ function loadResultsForDate(
 
   }
 
-  // --------------------------------
-// 一言メモがない旧データへの対応
-// --------------------------------
+  if (
+    typeof data.dailyNote !==
+    "string"
+  ) {
 
-if (
-  typeof data.dailyNote !==
-  "string"
-) {
+    data.dailyNote =
+      "";
 
-  data.dailyNote =
-    "";
-
-}
-
+  }
 
   allResultData[
     dateKey
   ] =
     data;
 
-
   saveAllResultData();
-
 
   return data;
 
@@ -1220,7 +1105,6 @@ let dailyResults =
     selectedDateKey
   );
 
-
 // --------------------------------
 // 予定保存
 // --------------------------------
@@ -1235,7 +1119,6 @@ function saveSchedules() {
   saveAllData();
 
 }
-
 
 // --------------------------------
 // 実績保存
@@ -1252,7 +1135,6 @@ function saveDailyResults() {
 
 }
 
-
 // --------------------------------
 // 現在時刻
 // --------------------------------
@@ -1262,7 +1144,6 @@ function getCurrentTime() {
   const now =
     new Date();
 
-
   const hours =
     String(
       now.getHours()
@@ -1270,7 +1151,6 @@ function getCurrentTime() {
       2,
       "0"
     );
-
 
   const minutes =
     String(
@@ -1280,11 +1160,9 @@ function getCurrentTime() {
       "0"
     );
 
-
   return `${hours}:${minutes}`;
 
 }
-
 
 // --------------------------------
 // 予定を1日の流れ順に並べる
@@ -1302,7 +1180,6 @@ function getSortMinutes(
       .split(":")
       .map(Number);
 
-
   if (
     hours <
     DAY_BOUNDARY_HOUR
@@ -1313,14 +1190,12 @@ function getSortMinutes(
 
   }
 
-
   return (
     hours * 60 +
     minutes
   );
 
 }
-
 
 function sortSchedulesByTime() {
 
@@ -1341,7 +1216,6 @@ function sortSchedulesByTime() {
 
 }
 
-
 // --------------------------------
 // 今日を表示しているか
 // --------------------------------
@@ -1354,7 +1228,6 @@ function isViewingToday() {
   );
 
 }
-
 
 // --------------------------------
 // HTMLとして危険な文字を無害化
@@ -1394,7 +1267,15 @@ function escapeHtml(
     );
 
 }
+// --------------------------------
+// 予定編集・並び替え状態
+// --------------------------------
 
+let editingScheduleId =
+  null;
+
+let draggingScheduleId =
+  null;
 
 // --------------------------------
 // 予定表示
@@ -1402,14 +1283,10 @@ function escapeHtml(
 
 function renderSchedules() {
 
-  sortSchedulesByTime();
-
-
   const list =
     document.getElementById(
       "scheduleList"
     );
-
 
   if (!list) {
 
@@ -1417,10 +1294,8 @@ function renderSchedules() {
 
   }
 
-
   list.innerHTML =
     "";
-
 
   schedules.forEach(
     schedule => {
@@ -1430,10 +1305,13 @@ function renderSchedules() {
           "div"
         );
 
-
       item.className =
         "schedule-item";
 
+      item.dataset.id =
+        String(
+          schedule.id
+        );
 
       if (
         schedule.completed
@@ -1445,14 +1323,55 @@ function renderSchedules() {
 
       }
 
+      const canEdit =
+        isViewingToday();
+
+      const isEditing =
+        canEdit &&
+        editingScheduleId ===
+          schedule.id;
+
+      if (
+        isEditing
+      ) {
+
+        item.classList.add(
+          "editing"
+        );
+
+      }
 
       item.innerHTML = `
+
+        ${
+          canEdit
+
+            ? `
+              <button
+                class="drag-handle"
+                data-id="${schedule.id}"
+                type="button"
+                aria-label="予定を並び替え"
+                title="ドラッグして並び替え"
+                ${isEditing ? "disabled" : ""}
+              >
+                ⠿
+              </button>
+            `
+
+            : `
+              <span
+                class="drag-placeholder"
+              ></span>
+            `
+        }
 
         <button
           class="check-button"
           data-id="${schedule.id}"
+          type="button"
           ${
-            isViewingToday()
+            canEdit
               ? ""
               : "disabled"
           }
@@ -1464,13 +1383,11 @@ function renderSchedules() {
           }
         </button>
 
-
         <span
           class="plan-time"
         >
           ${schedule.time}
         </span>
-
 
         <span
           class="task-name"
@@ -1482,7 +1399,6 @@ function renderSchedules() {
           }
         </span>
 
-
         <span
           class="actual-time"
         >
@@ -1492,33 +1408,88 @@ function renderSchedules() {
           }
         </span>
 
-
         ${
-          isViewingToday()
+          canEdit
 
             ? `
-
               <button
-                class="delete-button"
+                class="schedule-edit-button"
                 data-id="${schedule.id}"
-                title="削除"
+                type="button"
+                aria-label="予定を編集"
+                title="編集"
               >
-                ×
+                ✎
               </button>
-
             `
 
             : `
-
               <span
-                class="delete-placeholder"
+                class="schedule-action-placeholder"
               ></span>
-
             `
         }
 
-      `;
+        ${
+          isEditing
 
+            ? `
+              <div
+                class="schedule-edit-panel"
+              >
+
+                <input
+                  class="schedule-edit-time"
+                  type="time"
+                  value="${schedule.time}"
+                >
+
+                <input
+                  class="schedule-edit-name"
+                  type="text"
+                  value="${escapeHtml(
+                    schedule.name
+                  )}"
+                  maxlength="50"
+                >
+
+                <div
+                  class="schedule-edit-actions"
+                >
+
+                  <button
+                    class="schedule-save-button"
+                    data-id="${schedule.id}"
+                    type="button"
+                  >
+                    保存
+                  </button>
+
+                  <button
+                    class="schedule-cancel-button"
+                    data-id="${schedule.id}"
+                    type="button"
+                  >
+                    取消
+                  </button>
+
+                  <button
+                    class="schedule-edit-delete-button"
+                    data-id="${schedule.id}"
+                    type="button"
+                  >
+                    削除
+                  </button>
+
+                </div>
+
+              </div>
+            `
+
+            : ""
+        }
+
+      `;
 
       list.appendChild(
         item
@@ -1526,7 +1497,6 @@ function renderSchedules() {
 
     }
   );
-
 
   updateResults();
 
@@ -1542,10 +1512,109 @@ function renderSchedules() {
 
   updateWeeklySummary();
 
-  
+  if (
+    editingScheduleId !==
+    null
+  ) {
+
+    const editingItem =
+      list.querySelector(
+        `.schedule-item[data-id="${editingScheduleId}"]`
+      );
+
+    const nameInput =
+      editingItem?.querySelector(
+        ".schedule-edit-name"
+      );
+
+    nameInput?.focus();
+
+    nameInput?.select();
+
+  }
 
 }
 
+// --------------------------------
+// 予定編集
+// --------------------------------
+
+function updateScheduleDetails(
+  id,
+  time,
+  name
+) {
+
+  if (
+    !isViewingToday()
+  ) {
+
+    return;
+
+  }
+
+  const timePattern =
+    /^([01]\d|2[0-3]):[0-5]\d$/;
+
+  if (
+    !timePattern.test(
+      time
+    )
+  ) {
+
+    alert(
+      "正しい時刻を入力してください"
+    );
+
+    return;
+
+  }
+
+  const trimmedName =
+    String(
+      name
+    ).trim();
+
+  if (
+    trimmedName ===
+    ""
+  ) {
+
+    alert(
+      "予定名を入力してください"
+    );
+
+    return;
+
+  }
+
+  const schedule =
+    schedules.find(
+      schedule =>
+        schedule.id ===
+        id
+    );
+
+  if (!schedule) {
+
+    return;
+
+  }
+
+  schedule.time =
+    time;
+
+  schedule.name =
+    trimmedName;
+
+  editingScheduleId =
+    null;
+
+  saveSchedules();
+
+  renderSchedules();
+
+}
 
 // --------------------------------
 // 完了切り替え
@@ -1563,13 +1632,11 @@ function toggleSchedule(
 
   }
 
-
   const schedule =
     schedules.find(
       item =>
         item.id === id
     );
-
 
   if (!schedule) {
 
@@ -1577,10 +1644,8 @@ function toggleSchedule(
 
   }
 
-
   schedule.completed =
     !schedule.completed;
-
 
   if (
     schedule.completed
@@ -1589,8 +1654,6 @@ function toggleSchedule(
     schedule.actualTime =
       getCurrentTime();
 
-
-    // 起床
     if (
       schedule.name ===
         "起床" &&
@@ -1605,8 +1668,6 @@ function toggleSchedule(
 
     }
 
-
-    // 就寝
     if (
       schedule.name ===
         "就寝" &&
@@ -1623,24 +1684,16 @@ function toggleSchedule(
 
   } else {
 
-    /*
-      チェック解除しても
-      実績側の起床・就寝時刻は
-      消さない
-    */
-
     schedule.actualTime =
       null;
 
   }
-
 
   saveSchedules();
 
   renderSchedules();
 
 }
-
 
 // --------------------------------
 // 予定追加
@@ -1656,13 +1709,11 @@ function addSchedule() {
 
   }
 
-
   const time =
     prompt(
       "予定の時刻を入力してください",
       "12:00"
     );
-
 
   if (
     time === null
@@ -1672,10 +1723,8 @@ function addSchedule() {
 
   }
 
-
   const timePattern =
     /^([01]\d|2[0-3]):[0-5]\d$/;
-
 
   if (
     !timePattern.test(
@@ -1691,12 +1740,10 @@ function addSchedule() {
 
   }
 
-
   const name =
     prompt(
       "予定の名前を入力してください"
     );
-
 
   if (
     name === null
@@ -1706,10 +1753,8 @@ function addSchedule() {
 
   }
 
-
   const trimmedName =
     name.trim();
-
 
   if (
     trimmedName ===
@@ -1723,7 +1768,6 @@ function addSchedule() {
     return;
 
   }
-
 
   const maxId =
 
@@ -1741,7 +1785,6 @@ function addSchedule() {
         )
 
       : 0;
-
 
   const newSchedule = {
 
@@ -1762,20 +1805,15 @@ function addSchedule() {
 
   };
 
-
   schedules.push(
     newSchedule
   );
-
-
-  sortSchedulesByTime();
 
   saveSchedules();
 
   renderSchedules();
 
 }
-
 
 // --------------------------------
 // 予定削除
@@ -1793,13 +1831,11 @@ function deleteSchedule(
 
   }
 
-
   const schedule =
     schedules.find(
       schedule =>
         schedule.id === id
     );
-
 
   if (!schedule) {
 
@@ -1807,12 +1843,10 @@ function deleteSchedule(
 
   }
 
-
   const result =
     confirm(
       `「${schedule.name}」を削除しますか？`
     );
-
 
   if (!result) {
 
@@ -1820,21 +1854,17 @@ function deleteSchedule(
 
   }
 
-
   schedules =
     schedules.filter(
       schedule =>
         schedule.id !== id
     );
 
-
   saveSchedules();
 
   renderSchedules();
 
 }
-
-
 // --------------------------------
 // その週の月曜日を取得
 // --------------------------------
@@ -1848,28 +1878,22 @@ function getMondayOfWeek(
       dateKey
     );
 
-
   const day =
     date.getDay();
 
-
-  // 日曜日は7として扱う
   const diff =
     day === 0
       ? -6
       : 1 - day;
-
 
   date.setDate(
     date.getDate() +
     diff
   );
 
-
   return date;
 
 }
-
 
 // --------------------------------
 // 分 → 見やすい時間
@@ -1887,17 +1911,14 @@ function formatDuration(
 
   }
 
-
   const hours =
     Math.floor(
       minutes / 60
     );
 
-
   const remainingMinutes =
     minutes %
     60;
-
 
   if (
     remainingMinutes ===
@@ -1908,13 +1929,11 @@ function formatDuration(
 
   }
 
-
   return (
     `${hours}時間${remainingMinutes}分`
   );
 
 }
-
 
 // --------------------------------
 // 週間の実績を名前ごとに集計
@@ -1929,10 +1948,8 @@ function calculateWeeklyActivityTotals(
       dateKey
     );
 
-
   const totals =
     {};
-
 
   for (
     let i = 0;
@@ -1945,24 +1962,20 @@ function calculateWeeklyActivityTotals(
         monday
       );
 
-
     date.setDate(
       monday.getDate() +
       i
     );
-
 
     const key =
       formatDateKey(
         date
       );
 
-
     const result =
       allResultData[
         key
       ];
-
 
     if (
       !result ||
@@ -1975,7 +1988,6 @@ function calculateWeeklyActivityTotals(
 
     }
 
-
     result.activities.forEach(
       activity => {
 
@@ -1985,14 +1997,11 @@ function calculateWeeklyActivityTotals(
             ""
           ).trim();
 
-
         const minutes =
           Number(
             activity.minutes
           ) || 0;
 
-
-        // 名前がない実績は除外
         if (
           name === ""
         ) {
@@ -2001,8 +2010,6 @@ function calculateWeeklyActivityTotals(
 
         }
 
-
-        // 起床・就寝は週間時間集計から除外
         if (
           name === "起床" ||
           name === "就寝"
@@ -2012,8 +2019,6 @@ function calculateWeeklyActivityTotals(
 
         }
 
-
-        // 0分以下は集計しない
         if (
           minutes <= 0
         ) {
@@ -2021,7 +2026,6 @@ function calculateWeeklyActivityTotals(
           return;
 
         }
-
 
         if (
           !totals[name]
@@ -2032,7 +2036,6 @@ function calculateWeeklyActivityTotals(
 
         }
 
-
         totals[name] +=
           minutes;
 
@@ -2040,7 +2043,6 @@ function calculateWeeklyActivityTotals(
     );
 
   }
-
 
   return totals;
 
@@ -2059,14 +2061,11 @@ function calculateWeeklyExpenseSummary(
       dateKey
     );
 
-
   let total =
     0;
 
-
   const breakdown =
     {};
-
 
   for (
     let i = 0;
@@ -2079,24 +2078,20 @@ function calculateWeeklyExpenseSummary(
         monday
       );
 
-
     date.setDate(
       monday.getDate() +
       i
     );
-
 
     const key =
       formatDateKey(
         date
       );
 
-
     const result =
       allResultData[
         key
       ];
-
 
     if (
       !result ||
@@ -2109,7 +2104,6 @@ function calculateWeeklyExpenseSummary(
 
     }
 
-
     result.expenses.forEach(
       expense => {
 
@@ -2119,12 +2113,10 @@ function calculateWeeklyExpenseSummary(
             ""
           ).trim();
 
-
         const amount =
           Number(
             expense.amount
           ) || 0;
-
 
         if (
           name === "" ||
@@ -2135,10 +2127,8 @@ function calculateWeeklyExpenseSummary(
 
         }
 
-
         total +=
           amount;
-
 
         if (
           !breakdown[
@@ -2153,7 +2143,6 @@ function calculateWeeklyExpenseSummary(
 
         }
 
-
         breakdown[
           name
         ] +=
@@ -2163,7 +2152,6 @@ function calculateWeeklyExpenseSummary(
     );
 
   }
-
 
   return {
 
@@ -2188,12 +2176,10 @@ function updateWeeklyExpenseSummary() {
       "weeklyExpenseTotal"
     );
 
-
   const container =
     document.getElementById(
       "weeklyExpenseSummary"
     );
-
 
   if (
     !totalElement ||
@@ -2204,32 +2190,26 @@ function updateWeeklyExpenseSummary() {
 
   }
 
-
   const summary =
     calculateWeeklyExpenseSummary(
       selectedDateKey
     );
 
-
   totalElement.textContent =
     `${summary.total.toLocaleString()}円`;
 
-
   container.innerHTML =
     "";
-
 
   const expenses =
     Object.entries(
       summary.breakdown
     );
 
-
   expenses.sort(
     (a, b) =>
       b[1] - a[1]
   );
-
 
   if (
     expenses.length === 0
@@ -2241,10 +2221,11 @@ function updateWeeklyExpenseSummary() {
       </p>
     `;
 
+    updateMonthlySummary();
+
     return;
 
   }
-
 
   expenses.forEach(
     (
@@ -2259,10 +2240,8 @@ function updateWeeklyExpenseSummary() {
           "div"
         );
 
-
       row.className =
         "weekly-expense-row";
-
 
       row.innerHTML = `
 
@@ -2280,7 +2259,6 @@ function updateWeeklyExpenseSummary() {
 
       `;
 
-
       container.appendChild(
         row
       );
@@ -2291,7 +2269,6 @@ function updateWeeklyExpenseSummary() {
   updateMonthlySummary();
 
 }
-
 
 // --------------------------------
 // 週間まとめ表示
@@ -2304,12 +2281,10 @@ function updateWeeklySummary() {
       "weeklyActivitySummary"
     );
 
-
   const rangeElement =
     document.getElementById(
       "weeklyDateRange"
     );
-
 
   if (
     !container ||
@@ -2320,24 +2295,20 @@ function updateWeeklySummary() {
 
   }
 
-
   const monday =
     getMondayOfWeek(
       selectedDateKey
     );
-
 
   const sunday =
     new Date(
       monday
     );
 
-
   sunday.setDate(
     monday.getDate() +
     6
   );
-
 
   rangeElement.textContent =
     `${
@@ -2346,24 +2317,20 @@ function updateWeeklySummary() {
       sunday.getMonth() + 1
     }/${sunday.getDate()}`;
 
-
   const totals =
     calculateWeeklyActivityTotals(
       selectedDateKey
     );
 
-
   container.innerHTML =
     "";
-
 
   const activities =
     Object.entries(
       totals
     );
-    updateMonthlySummary();
 
-
+  updateMonthlySummary();
 
   if (
     activities.length === 0
@@ -2379,13 +2346,10 @@ function updateWeeklySummary() {
 
   }
 
-
-  // 時間が長い順に並べる
   activities.sort(
     (a, b) =>
       b[1] - a[1]
   );
-
 
   activities.forEach(
     ([name, minutes]) => {
@@ -2395,10 +2359,8 @@ function updateWeeklySummary() {
           "div"
         );
 
-
       row.className =
         "weekly-activity-row";
-
 
       row.innerHTML = `
 
@@ -2416,7 +2378,6 @@ function updateWeeklySummary() {
 
       `;
 
-
       container.appendChild(
         row
       );
@@ -2425,7 +2386,6 @@ function updateWeeklySummary() {
   );
 
 }
-
 
 // --------------------------------
 // 月間の実績を集計
@@ -2453,10 +2413,8 @@ function calculateMonthlyActivityTotals(
       0
     ).getDate();
 
-
   const totals =
     {};
-
 
   for (
     let day = 1;
@@ -2471,18 +2429,15 @@ function calculateMonthlyActivityTotals(
         day
       );
 
-
     const key =
       formatDateKey(
         currentDate
       );
 
-
     const result =
       allResultData[
         key
       ];
-
 
     if (
       !result ||
@@ -2495,7 +2450,6 @@ function calculateMonthlyActivityTotals(
 
     }
 
-
     result.activities.forEach(
       activity => {
 
@@ -2505,12 +2459,10 @@ function calculateMonthlyActivityTotals(
             ""
           ).trim();
 
-
         const minutes =
           Number(
             activity.minutes
           ) || 0;
-
 
         if (
           name === "" ||
@@ -2523,7 +2475,6 @@ function calculateMonthlyActivityTotals(
 
         }
 
-
         if (
           !totals[name]
         ) {
@@ -2533,7 +2484,6 @@ function calculateMonthlyActivityTotals(
 
         }
 
-
         totals[name] +=
           minutes;
 
@@ -2542,12 +2492,9 @@ function calculateMonthlyActivityTotals(
 
   }
 
-
   return totals;
 
 }
-
-
 
 // --------------------------------
 // 月間支出を集計
@@ -2575,13 +2522,11 @@ function calculateMonthlyExpenseSummary(
       0
     ).getDate();
 
-
   let total =
     0;
 
   const breakdown =
     {};
-
 
   for (
     let day = 1;
@@ -2596,18 +2541,15 @@ function calculateMonthlyExpenseSummary(
         day
       );
 
-
     const key =
       formatDateKey(
         currentDate
       );
 
-
     const result =
       allResultData[
         key
       ];
-
 
     if (
       !result ||
@@ -2620,7 +2562,6 @@ function calculateMonthlyExpenseSummary(
 
     }
 
-
     result.expenses.forEach(
       expense => {
 
@@ -2630,12 +2571,10 @@ function calculateMonthlyExpenseSummary(
             ""
           ).trim();
 
-
         const amount =
           Number(
             expense.amount
           ) || 0;
-
 
         if (
           name === "" ||
@@ -2646,10 +2585,8 @@ function calculateMonthlyExpenseSummary(
 
         }
 
-
         total +=
           amount;
-
 
         if (
           !breakdown[name]
@@ -2660,7 +2597,6 @@ function calculateMonthlyExpenseSummary(
 
         }
 
-
         breakdown[name] +=
           amount;
 
@@ -2669,15 +2605,12 @@ function calculateMonthlyExpenseSummary(
 
   }
 
-
   return {
     total,
     breakdown
   };
 
 }
-
-
 
 // --------------------------------
 // 月間まとめ表示
@@ -2705,7 +2638,6 @@ function updateMonthlySummary() {
       "monthlyDateRange"
     );
 
-
   if (
     !activityContainer ||
     !expenseContainer ||
@@ -2717,42 +2649,31 @@ function updateMonthlySummary() {
 
   }
 
-
   const date =
     dateKeyToDate(
       selectedDateKey
     );
 
-
   rangeElement.textContent =
     `${date.getFullYear()}年${date.getMonth() + 1}月`;
-
-
-  // ----------------------------
-  // 実績
-  // ----------------------------
 
   const totals =
     calculateMonthlyActivityTotals(
       selectedDateKey
     );
 
-
   const activities =
     Object.entries(
       totals
     );
-
 
   activities.sort(
     (a, b) =>
       b[1] - a[1]
   );
 
-
   activityContainer.innerHTML =
     "";
-
 
   if (
     activities.length === 0
@@ -2774,10 +2695,8 @@ function updateMonthlySummary() {
             "div"
           );
 
-
         row.className =
           "weekly-activity-row";
-
 
         row.innerHTML = `
           <span class="weekly-activity-name">
@@ -2789,7 +2708,6 @@ function updateMonthlySummary() {
           </strong>
         `;
 
-
         activityContainer.appendChild(
           row
         );
@@ -2799,36 +2717,26 @@ function updateMonthlySummary() {
 
   }
 
-
-  // ----------------------------
-  // 支出
-  // ----------------------------
-
   const expenseSummary =
     calculateMonthlyExpenseSummary(
       selectedDateKey
     );
 
-
   expenseTotal.textContent =
     `${expenseSummary.total.toLocaleString()}円`;
-
 
   const expenses =
     Object.entries(
       expenseSummary.breakdown
     );
 
-
   expenses.sort(
     (a, b) =>
       b[1] - a[1]
   );
 
-
   expenseContainer.innerHTML =
     "";
-
 
   if (
     expenses.length === 0
@@ -2844,7 +2752,6 @@ function updateMonthlySummary() {
 
   }
 
-
   expenses.forEach(
     ([name, amount]) => {
 
@@ -2853,10 +2760,8 @@ function updateMonthlySummary() {
           "div"
         );
 
-
       row.className =
         "weekly-expense-row";
-
 
       row.innerHTML = `
         <span class="weekly-expense-name">
@@ -2868,7 +2773,6 @@ function updateMonthlySummary() {
         </strong>
       `;
 
-
       expenseContainer.appendChild(
         row
       );
@@ -2877,7 +2781,6 @@ function updateMonthlySummary() {
   );
 
 }
-
 // --------------------------------
 // 起床・就寝・達成数を表示
 // --------------------------------
@@ -2890,12 +2793,10 @@ function updateResults() {
         schedule.completed
     ).length;
 
-
   const achievementResult =
     document.getElementById(
       "achievementResult"
     );
-
 
   if (
     achievementResult
@@ -2906,18 +2807,15 @@ function updateResults() {
 
   }
 
-
   const wakeInput =
     document.getElementById(
       "wakeTimeInput"
     );
 
-
   const sleepInput =
     document.getElementById(
       "sleepTimeInput"
     );
-
 
   if (
     wakeInput
@@ -2928,7 +2826,6 @@ function updateResults() {
       "";
 
   }
-
 
   if (
     sleepInput
@@ -2953,19 +2850,16 @@ function renderDailyNote() {
       "dailyNoteInput"
     );
 
-
   if (!input) {
 
     return;
 
   }
 
-
   input.value =
     dailyResults.dailyNote || "";
 
 }
-
 
 // --------------------------------
 // 実績一覧表示
@@ -2978,7 +2872,6 @@ function renderActivityResults() {
       "activityResults"
     );
 
-
   if (
     !container
   ) {
@@ -2987,10 +2880,8 @@ function renderActivityResults() {
 
   }
 
-
   container.innerHTML =
     "";
-
 
   dailyResults.activities.forEach(
     activity => {
@@ -3000,10 +2891,8 @@ function renderActivityResults() {
           "div"
         );
 
-
       row.className =
         "activity-row";
-
 
       row.innerHTML = `
 
@@ -3018,7 +2907,6 @@ function renderActivityResults() {
           }"
         >
 
-
         <input
           type="number"
           class="activity-minutes-input"
@@ -3028,13 +2916,11 @@ function renderActivityResults() {
           max="1440"
         >
 
-
         <span
           class="activity-minute-label"
         >
           分
         </span>
-
 
         <button
           class="activity-delete-button"
@@ -3046,7 +2932,6 @@ function renderActivityResults() {
 
       `;
 
-
       container.appendChild(
         row
       );
@@ -3056,10 +2941,8 @@ function renderActivityResults() {
 
 }
 
-
 // --------------------------------
 // 実績追加
-// 過去の日付にも追加可能
 // --------------------------------
 
 function addActivity() {
@@ -3069,7 +2952,6 @@ function addActivity() {
       "実績の名前を入力してください"
     );
 
-
   if (
     name === null
   ) {
@@ -3078,10 +2960,8 @@ function addActivity() {
 
   }
 
-
   const trimmedName =
     name.trim();
-
 
   if (
     trimmedName ===
@@ -3096,7 +2976,6 @@ function addActivity() {
 
   }
 
-
   const ids =
     dailyResults.activities.map(
       activity =>
@@ -3104,7 +2983,6 @@ function addActivity() {
           activity.id
         ) || 0
     );
-
 
   const maxId =
 
@@ -3115,7 +2993,6 @@ function addActivity() {
         )
 
       : 0;
-
 
   const newActivity = {
 
@@ -3130,11 +3007,9 @@ function addActivity() {
 
   };
 
-
   dailyResults.activities.push(
     newActivity
   );
-
 
   saveDailyResults();
 
@@ -3144,10 +3019,8 @@ function addActivity() {
 
 }
 
-
 // --------------------------------
 // 実績削除
-// 過去の日付でも削除可能
 // --------------------------------
 
 function deleteActivity(
@@ -3160,7 +3033,6 @@ function deleteActivity(
         activity.id === id
     );
 
-
   if (
     !activity
   ) {
@@ -3169,12 +3041,10 @@ function deleteActivity(
 
   }
 
-
   const result =
     confirm(
       `「${activity.name}」を削除しますか？`
     );
-
 
   if (
     !result
@@ -3184,14 +3054,11 @@ function deleteActivity(
 
   }
 
-
   dailyResults.activities =
-
     dailyResults.activities.filter(
       activity =>
         activity.id !== id
     );
-
 
   saveDailyResults();
 
@@ -3201,10 +3068,8 @@ function deleteActivity(
 
 }
 
-
 // --------------------------------
 // 実績名・分数変更
-// 過去の日付も変更可能
 // --------------------------------
 
 function updateActivity(
@@ -3219,7 +3084,6 @@ function updateActivity(
         activity.id === id
     );
 
-
   if (
     !activity
   ) {
@@ -3228,11 +3092,6 @@ function updateActivity(
 
   }
 
-
-  // --------------------------------
-  // 実績名変更
-  // --------------------------------
-
   if (
     type ===
     "name"
@@ -3240,7 +3099,6 @@ function updateActivity(
 
     const newName =
       value.trim();
-
 
     if (
       newName ===
@@ -3251,24 +3109,16 @@ function updateActivity(
         "実績名を入力してください"
       );
 
-
       renderActivityResults();
-
 
       return;
 
     }
 
-
     activity.name =
       newName;
 
   }
-
-
-  // --------------------------------
-  // 分数変更
-  // --------------------------------
 
   if (
     type ===
@@ -3279,7 +3129,6 @@ function updateActivity(
       Number(
         value
       );
-
 
     if (
       Number.isNaN(
@@ -3293,31 +3142,24 @@ function updateActivity(
 
     }
 
-
     minutes =
       Math.min(
-
         Math.round(
           minutes
         ),
-
         1440
-
       );
-
 
     activity.minutes =
       minutes;
 
   }
 
-
   saveDailyResults();
 
   updateWeeklySummary();
 
 }
-
 
 // --------------------------------
 // 日付表示
@@ -3330,74 +3172,55 @@ function updateDate() {
       selectedDateKey
     );
 
-
-    const monthProgress =
-  document.getElementById(
-    "monthProgress"
-  );
-
-
+  const monthProgress =
+    document.getElementById(
+      "monthProgress"
+    );
 
   if (
-
     monthProgress
-
   ) {
 
-
     const year =
-
-    date.getFullYear();
-
+      date.getFullYear();
 
     const month =
-
-    date.getMonth();
-
+      date.getMonth();
 
     const currentDay =
-
-    date.getDate();
-
-
+      date.getDate();
 
     const lastDay =
-
-    new Date(
-      year,
-      month + 1,
-      0
-    ).getDate();
-
+      new Date(
+        year,
+        month + 1,
+        0
+      ).getDate();
 
     const remainingDays =
-    lastDay -
-    currentDay;
+      lastDay -
+      currentDay;
 
     if (
       remainingDays === 0
     ) {
 
-
       monthProgress.textContent =
-      `${month + 1}月${lastDay}日まで ・ 今日で終了`;
+        `${month + 1}月${lastDay}日まで ・ 今日で終了`;
 
     } else {
 
       monthProgress.textContent =
-      `${month + 1}月${lastDay}日まで ・ あと${remainingDays}日`;
+        `${month + 1}月${lastDay}日まで ・ あと${remainingDays}日`;
 
     }
 
   }
 
-
-
   const todayDate =
     document.getElementById(
       "todayDate"
     );
-
 
   if (
     todayDate
@@ -3410,12 +3233,27 @@ function updateDate() {
 
   }
 
+  const datePickerInput =
+    document.getElementById(
+      "datePickerInput"
+    );
+
+  if (
+    datePickerInput
+  ) {
+
+    datePickerInput.value =
+      selectedDateKey;
+
+    datePickerInput.max =
+      getLifeLogDateKey();
+
+  }
 
   const nextDateButton =
     document.getElementById(
       "nextDateButton"
     );
-
 
   if (
     nextDateButton
@@ -3426,12 +3264,10 @@ function updateDate() {
 
   }
 
-
   const addButton =
     document.getElementById(
       "addButton"
     );
-
 
   if (
     addButton
@@ -3444,64 +3280,153 @@ function updateDate() {
 
 }
 
+// --------------------------------
+// 日付移動モード
+// --------------------------------
+
+let dateMoveMode =
+  "day";
 
 // --------------------------------
-// 表示日変更
+// 指定した日へ移動
 // --------------------------------
 
-function changeDate(
-  days
+function goToDate(
+  dateKey
 ) {
 
-  const date =
-    dateKeyToDate(
-      selectedDateKey
-    );
-
-
-  date.setDate(
-    date.getDate() +
-    days
-  );
-
-
-  const newDateKey =
-    formatDateKey(
-      date
-    );
-
+  const todayKey =
+    getLifeLogDateKey();
 
   if (
-    newDateKey >
-    getLifeLogDateKey()
+    !dateKey ||
+    dateKey > todayKey
   ) {
 
     return;
 
   }
 
+  editingScheduleId =
+    null;
+
+  draggingScheduleId =
+    null;
+
+  document.body
+    .classList.remove(
+      "schedule-reordering"
+    );
 
   selectedDateKey =
-    newDateKey;
-
+    dateKey;
 
   schedules =
     loadSchedulesForDate(
       selectedDateKey
     );
 
-
   dailyResults =
     loadResultsForDate(
       selectedDateKey
     );
 
-
   renderSchedules();
 
 }
 
+// --------------------------------
+// 日 / 月 単位で移動
+// --------------------------------
 
+function changeDate(
+  direction
+) {
+
+  const currentDate =
+    dateKeyToDate(
+      selectedDateKey
+    );
+
+  let targetDate;
+
+  if (
+    dateMoveMode ===
+    "month"
+  ) {
+
+    const originalDay =
+      currentDate.getDate();
+
+    targetDate =
+      new Date(
+        currentDate.getFullYear(),
+        currentDate.getMonth() +
+          direction,
+        1
+      );
+
+    const targetLastDay =
+      new Date(
+        targetDate.getFullYear(),
+        targetDate.getMonth() + 1,
+        0
+      ).getDate();
+
+    targetDate.setDate(
+      Math.min(
+        originalDay,
+        targetLastDay
+      )
+    );
+
+  } else {
+
+    targetDate =
+      new Date(
+        currentDate
+      );
+
+    targetDate.setDate(
+      targetDate.getDate() +
+        direction
+    );
+
+  }
+
+  let newDateKey =
+    formatDateKey(
+      targetDate
+    );
+
+  const todayKey =
+    getLifeLogDateKey();
+
+  if (
+    newDateKey >
+    todayKey
+  ) {
+
+    if (
+      direction > 0
+    ) {
+
+      newDateKey =
+        todayKey;
+
+    } else {
+
+      return;
+
+    }
+
+  }
+
+  goToDate(
+    newDateKey
+  );
+
+}
 // --------------------------------
 // 予定クリック
 // --------------------------------
@@ -3511,6 +3436,164 @@ const scheduleListElement =
     "scheduleList"
   );
 
+// --------------------------------
+// DOMの順番を予定データへ保存
+// --------------------------------
+
+function saveScheduleOrderFromDom() {
+
+  if (
+    !scheduleListElement
+  ) {
+
+    return;
+
+  }
+
+  const ids =
+    [
+      ...scheduleListElement
+        .querySelectorAll(
+          ".schedule-item"
+        )
+    ].map(
+      item =>
+        Number(
+          item.dataset.id
+        )
+    );
+
+  const scheduleMap =
+    new Map(
+      schedules.map(
+        schedule => [
+          schedule.id,
+          schedule
+        ]
+      )
+    );
+
+  schedules =
+    ids
+      .map(
+        id =>
+          scheduleMap.get(
+            id
+          )
+      )
+      .filter(Boolean);
+
+  saveSchedules();
+
+}
+
+// --------------------------------
+// キーボード並び替え
+// --------------------------------
+
+function moveScheduleByKeyboard(
+  id,
+  direction
+) {
+
+  if (
+    !isViewingToday()
+  ) {
+
+    return;
+
+  }
+
+  const currentIndex =
+    schedules.findIndex(
+      schedule =>
+        schedule.id ===
+        id
+    );
+
+  if (
+    currentIndex ===
+    -1
+  ) {
+
+    return;
+
+  }
+
+  const newIndex =
+    currentIndex +
+    direction;
+
+  if (
+    newIndex < 0 ||
+    newIndex >=
+      schedules.length
+  ) {
+
+    return;
+
+  }
+
+  const [
+    movedSchedule
+  ] =
+    schedules.splice(
+      currentIndex,
+      1
+    );
+
+  schedules.splice(
+    newIndex,
+    0,
+    movedSchedule
+  );
+
+  saveSchedules();
+
+  renderSchedules();
+
+  requestAnimationFrame(
+    () => {
+
+      scheduleListElement
+        ?.querySelector(
+          `.drag-handle[data-id="${id}"]`
+        )
+        ?.focus();
+
+    }
+  );
+
+}
+
+// --------------------------------
+// ドラッグ終了
+// --------------------------------
+
+function finishScheduleDrag() {
+
+  if (
+    draggingScheduleId ===
+    null
+  ) {
+
+    return;
+
+  }
+
+  saveScheduleOrderFromDom();
+
+  draggingScheduleId =
+    null;
+
+  document.body
+    .classList.remove(
+      "schedule-reordering"
+    );
+
+  renderSchedules();
+
+}
 
 if (
   scheduleListElement
@@ -3518,44 +3601,126 @@ if (
 
   scheduleListElement
     .addEventListener(
-
       "click",
-
       event => {
 
-        // 完了ボタン
         const checkButton =
           event.target.closest(
             ".check-button"
           );
 
-
         if (
           checkButton
         ) {
 
-          const id =
+          toggleSchedule(
             Number(
               checkButton.dataset.id
-            );
-
-
-          toggleSchedule(
-            id
+            )
           );
-
 
           return;
 
         }
 
-
-        // 削除ボタン
-        const deleteButton =
+        const editButton =
           event.target.closest(
-            ".delete-button"
+            ".schedule-edit-button"
           );
 
+        if (
+          editButton
+        ) {
+
+          editingScheduleId =
+            Number(
+              editButton.dataset.id
+            );
+
+          renderSchedules();
+
+          return;
+
+        }
+
+        const saveButton =
+          event.target.closest(
+            ".schedule-save-button"
+          );
+
+        if (
+          saveButton
+        ) {
+
+          const id =
+            Number(
+              saveButton.dataset.id
+            );
+
+          const item =
+            saveButton.closest(
+              ".schedule-item"
+            );
+
+          if (
+            !item
+          ) {
+
+            return;
+
+          }
+
+          const timeInput =
+            item.querySelector(
+              ".schedule-edit-time"
+            );
+
+          const nameInput =
+            item.querySelector(
+              ".schedule-edit-name"
+            );
+
+          if (
+            !timeInput ||
+            !nameInput
+          ) {
+
+            return;
+
+          }
+
+          updateScheduleDetails(
+            id,
+            timeInput.value,
+            nameInput.value
+          );
+
+          return;
+
+        }
+
+        const cancelButton =
+          event.target.closest(
+            ".schedule-cancel-button"
+          );
+
+        if (
+          cancelButton
+        ) {
+
+          editingScheduleId =
+            null;
+
+          renderSchedules();
+
+          return;
+
+        }
+
+        const deleteButton =
+          event.target.closest(
+            ".schedule-edit-delete-button"
+          );
 
         if (
           deleteButton
@@ -3566,23 +3731,316 @@ if (
               deleteButton.dataset.id
             );
 
+          editingScheduleId =
+            null;
 
           deleteSchedule(
             id
           );
 
+          return;
+
         }
 
       }
+    );
 
+  scheduleListElement
+    .addEventListener(
+      "keydown",
+      event => {
+
+        const item =
+          event.target.closest(
+            ".schedule-item"
+          );
+
+        if (
+          !item
+        ) {
+
+          return;
+
+        }
+
+        if (
+          event.target
+            .classList
+            .contains(
+              "drag-handle"
+            )
+        ) {
+
+          if (
+            event.key ===
+              "ArrowUp" ||
+            event.key ===
+              "ArrowDown"
+          ) {
+
+            event.preventDefault();
+
+            const id =
+              Number(
+                item.dataset.id
+              );
+
+            moveScheduleByKeyboard(
+              id,
+              event.key ===
+                "ArrowUp"
+                ? -1
+                : 1
+            );
+
+          }
+
+          return;
+
+        }
+
+        const isEditInput =
+          event.target
+            .classList
+            .contains(
+              "schedule-edit-time"
+            ) ||
+          event.target
+            .classList
+            .contains(
+              "schedule-edit-name"
+            );
+
+        if (
+          !isEditInput
+        ) {
+
+          return;
+
+        }
+
+        if (
+          event.key ===
+          "Escape"
+        ) {
+
+          editingScheduleId =
+            null;
+
+          renderSchedules();
+
+          return;
+
+        }
+
+        if (
+          event.key ===
+          "Enter"
+        ) {
+
+          event.preventDefault();
+
+          const id =
+            Number(
+              item.dataset.id
+            );
+
+          const timeInput =
+            item.querySelector(
+              ".schedule-edit-time"
+            );
+
+          const nameInput =
+            item.querySelector(
+              ".schedule-edit-name"
+            );
+
+          if (
+            !timeInput ||
+            !nameInput
+          ) {
+
+            return;
+
+          }
+
+          updateScheduleDetails(
+            id,
+            timeInput.value,
+            nameInput.value
+          );
+
+        }
+
+      }
+    );
+
+  // --------------------------------
+  // ドラッグ開始
+  // --------------------------------
+
+  scheduleListElement
+    .addEventListener(
+      "pointerdown",
+      event => {
+
+        const handle =
+          event.target.closest(
+            ".drag-handle"
+          );
+
+        if (
+          !handle ||
+          !isViewingToday() ||
+          editingScheduleId !==
+            null
+        ) {
+
+          return;
+
+        }
+
+        const item =
+          handle.closest(
+            ".schedule-item"
+          );
+
+        if (
+          !item
+        ) {
+
+          return;
+
+        }
+
+        draggingScheduleId =
+          Number(
+            item.dataset.id
+          );
+
+        item.classList.add(
+          "dragging"
+        );
+
+        document.body
+          .classList.add(
+            "schedule-reordering"
+          );
+
+        handle.setPointerCapture?.(
+          event.pointerId
+        );
+
+        event.preventDefault();
+
+      }
+    );
+
+  // --------------------------------
+  // ドラッグ中
+  // --------------------------------
+
+  scheduleListElement
+    .addEventListener(
+      "pointermove",
+      event => {
+
+        if (
+          draggingScheduleId ===
+          null
+        ) {
+
+          return;
+
+        }
+
+        const draggedItem =
+          scheduleListElement
+            .querySelector(
+              `.schedule-item[data-id="${draggingScheduleId}"]`
+            );
+
+        if (
+          !draggedItem
+        ) {
+
+          return;
+
+        }
+
+        const element =
+          document.elementFromPoint(
+            event.clientX,
+            event.clientY
+          );
+
+        const targetItem =
+          element?.closest(
+            ".schedule-item"
+          );
+
+        if (
+          !targetItem ||
+          targetItem ===
+            draggedItem ||
+          targetItem.parentElement !==
+            scheduleListElement
+        ) {
+
+          return;
+
+        }
+
+        const rect =
+          targetItem
+            .getBoundingClientRect();
+
+        const before =
+          event.clientY <
+          rect.top +
+            rect.height / 2;
+
+        if (
+          before
+        ) {
+
+          scheduleListElement
+            .insertBefore(
+              draggedItem,
+              targetItem
+            );
+
+        } else {
+
+          scheduleListElement
+            .insertBefore(
+              draggedItem,
+              targetItem.nextSibling
+            );
+
+        }
+
+        event.preventDefault();
+
+      }
+    );
+
+  scheduleListElement
+    .addEventListener(
+      "pointerup",
+      finishScheduleDrag
+    );
+
+  scheduleListElement
+    .addEventListener(
+      "pointercancel",
+      finishScheduleDrag
     );
 
 }
 
-
 // --------------------------------
 // 起床時間を直接変更
-// 過去の日も変更可能
 // --------------------------------
 
 const wakeTimeInput =
@@ -3590,34 +4048,27 @@ const wakeTimeInput =
     "wakeTimeInput"
   );
 
-
 if (
   wakeTimeInput
 ) {
 
   wakeTimeInput
     .addEventListener(
-
       "change",
-
       event => {
 
         dailyResults.wakeTime =
           event.target.value;
 
-
         saveDailyResults();
 
       }
-
     );
 
 }
 
-
 // --------------------------------
 // 就寝時間を直接変更
-// 過去の日も変更可能
 // --------------------------------
 
 const sleepTimeInput =
@@ -3625,30 +4076,24 @@ const sleepTimeInput =
     "sleepTimeInput"
   );
 
-
 if (
   sleepTimeInput
 ) {
 
   sleepTimeInput
     .addEventListener(
-
       "change",
-
       event => {
 
         dailyResults.sleepTime =
           event.target.value;
 
-
         saveDailyResults();
 
       }
-
     );
 
 }
-
 
 // --------------------------------
 // 実績名・時間変更
@@ -3659,23 +4104,19 @@ const activityResultsElement =
     "activityResults"
   );
 
-
 if (
   activityResultsElement
 ) {
 
   activityResultsElement
     .addEventListener(
-
       "change",
-
       event => {
 
         const id =
           Number(
             event.target.dataset.id
           );
-
 
         if (
           !id
@@ -3685,78 +4126,52 @@ if (
 
         }
 
-
-        // 実績名変更
         if (
-
           event.target
             .classList
             .contains(
               "activity-name-input"
             )
-
         ) {
 
           updateActivity(
-
             id,
-
             "name",
-
             event.target.value
-
           );
 
         }
 
-
-        // 分数変更
         if (
-
           event.target
             .classList
             .contains(
               "activity-minutes-input"
             )
-
         ) {
 
           updateActivity(
-
             id,
-
             "minutes",
-
             event.target.value
-
           );
-
 
           renderActivityResults();
 
         }
 
       }
-
     );
-
-
-  // --------------------------------
-  // 実績削除
-  // --------------------------------
 
   activityResultsElement
     .addEventListener(
-
       "click",
-
       event => {
 
         const button =
           event.target.closest(
             ".activity-delete-button"
           );
-
 
         if (
           !button
@@ -3766,23 +4181,19 @@ if (
 
         }
 
-
         const id =
           Number(
             button.dataset.id
           );
-
 
         deleteActivity(
           id
         );
 
       }
-
     );
 
 }
-
 
 // --------------------------------
 // ＋予定を追加
@@ -3793,26 +4204,21 @@ const addButton =
     "addButton"
   );
 
-
 if (
   addButton
 ) {
 
   addButton
     .addEventListener(
-
       "click",
-
       () => {
 
         addSchedule();
 
       }
-
     );
 
 }
-
 
 // --------------------------------
 // ＋実績を追加
@@ -3823,26 +4229,108 @@ const addActivityButton =
     "addActivityButton"
   );
 
-
 if (
   addActivityButton
 ) {
 
   addActivityButton
     .addEventListener(
-
       "click",
-
       () => {
 
         addActivity();
 
       }
-
     );
 
 }
 
+// --------------------------------
+// 日 / 月 モード
+// --------------------------------
+
+const dayModeButton =
+  document.getElementById(
+    "dayModeButton"
+  );
+
+const monthModeButton =
+  document.getElementById(
+    "monthModeButton"
+  );
+
+function setDateMoveMode(
+  mode
+) {
+
+  dateMoveMode =
+    mode;
+
+  if (
+    dayModeButton
+  ) {
+
+    dayModeButton.classList.toggle(
+      "active",
+      mode === "day"
+    );
+
+  }
+
+  if (
+    monthModeButton
+  ) {
+
+    monthModeButton.classList.toggle(
+      "active",
+      mode === "month"
+    );
+
+  }
+
+}
+
+dayModeButton?.addEventListener(
+  "click",
+  () => {
+
+    setDateMoveMode(
+      "day"
+    );
+
+  }
+);
+
+monthModeButton?.addEventListener(
+  "click",
+  () => {
+
+    setDateMoveMode(
+      "month"
+    );
+
+  }
+);
+
+// --------------------------------
+// 日付を直接選択
+// --------------------------------
+
+const datePickerInput =
+  document.getElementById(
+    "datePickerInput"
+  );
+
+datePickerInput?.addEventListener(
+  "change",
+  event => {
+
+    goToDate(
+      event.target.value
+    );
+
+  }
+);
 
 // --------------------------------
 // 前の日
@@ -3853,16 +4341,13 @@ const prevDateButton =
     "prevDateButton"
   );
 
-
 if (
   prevDateButton
 ) {
 
   prevDateButton
     .addEventListener(
-
       "click",
-
       () => {
 
         changeDate(
@@ -3870,11 +4355,9 @@ if (
         );
 
       }
-
     );
 
 }
-
 
 // --------------------------------
 // 次の日
@@ -3885,16 +4368,13 @@ const nextDateButton =
     "nextDateButton"
   );
 
-
 if (
   nextDateButton
 ) {
 
   nextDateButton
     .addEventListener(
-
       "click",
-
       () => {
 
         changeDate(
@@ -3902,11 +4382,9 @@ if (
         );
 
       }
-
     );
 
 }
-
 
 // --------------------------------
 // 今日に戻る
@@ -3917,42 +4395,23 @@ const todayButton =
     "todayButton"
   );
 
-
 if (
   todayButton
 ) {
 
   todayButton
     .addEventListener(
-
       "click",
-
       () => {
 
-        selectedDateKey =
-          getLifeLogDateKey();
-
-
-        schedules =
-          loadSchedulesForDate(
-            selectedDateKey
-          );
-
-
-        dailyResults =
-          loadResultsForDate(
-            selectedDateKey
-          );
-
-
-        renderSchedules();
+        goToDate(
+          getLifeLogDateKey()
+        );
 
       }
-
     );
 
 }
-
 // --------------------------------
 // Blob → DataURL
 // --------------------------------
@@ -3993,7 +4452,6 @@ function blobToDataUrl(
   );
 
 }
-
 
 // --------------------------------
 // DataURL → Blob
@@ -4056,7 +4514,6 @@ function dataUrlToBlob(
   );
 
 }
-
 
 // --------------------------------
 // IndexedDBの写真を全部取得
@@ -4131,7 +4588,6 @@ async function getAllDailyPhotos() {
 
 }
 
-
 // --------------------------------
 // IndexedDBの写真を置き換える
 // --------------------------------
@@ -4163,7 +4619,6 @@ async function replaceAllDailyPhotos(
         })
       );
 
-
   const db =
     await openPhotoDB();
 
@@ -4183,7 +4638,6 @@ async function replaceAllDailyPhotos(
 
       store.clear();
 
-
       preparedPhotos.forEach(
         photo => {
 
@@ -4194,7 +4648,6 @@ async function replaceAllDailyPhotos(
         }
       );
 
-
       transaction.oncomplete =
         () => {
 
@@ -4203,7 +4656,6 @@ async function replaceAllDailyPhotos(
           resolve();
 
         };
-
 
       transaction.onerror =
         event => {
@@ -4221,7 +4673,6 @@ async function replaceAllDailyPhotos(
 
 }
 
-
 // --------------------------------
 // バックアップ作成
 // --------------------------------
@@ -4232,7 +4683,6 @@ async function exportBackup() {
 
     const photos =
       await getAllDailyPhotos();
-
 
     const lifeLogPhotos =
       await Promise.all(
@@ -4250,7 +4700,6 @@ async function exportBackup() {
           })
         )
       );
-
 
     const backupData = {
 
@@ -4274,14 +4723,12 @@ async function exportBackup() {
 
     };
 
-
     const json =
       JSON.stringify(
         backupData,
         null,
         2
       );
-
 
     const blob =
       new Blob(
@@ -4294,26 +4741,21 @@ async function exportBackup() {
         }
       );
 
-
     const url =
       URL.createObjectURL(
         blob
       );
-
 
     const link =
       document.createElement(
         "a"
       );
 
-
     const now =
       new Date();
 
-
     const year =
       now.getFullYear();
-
 
     const month =
       String(
@@ -4323,7 +4765,6 @@ async function exportBackup() {
         "0"
       );
 
-
     const day =
       String(
         now.getDate()
@@ -4332,30 +4773,23 @@ async function exportBackup() {
         "0"
       );
 
-
     link.href =
       url;
 
-
     link.download =
       `LifeLog-backup-${year}-${month}-${day}.json`;
-
 
     document.body.appendChild(
       link
     );
 
-
     link.click();
 
-
     link.remove();
-
 
     URL.revokeObjectURL(
       url
     );
-
 
   } catch (error) {
 
@@ -4371,7 +4805,6 @@ async function exportBackup() {
 
 }
 
-
 // --------------------------------
 // バックアップ復元
 // --------------------------------
@@ -4385,12 +4818,10 @@ async function importBackup(
     const text =
       await file.text();
 
-
     const backup =
       JSON.parse(
         text
       );
-
 
     if (
       backup.app !==
@@ -4405,7 +4836,6 @@ async function importBackup(
 
     }
 
-
     if (
       !backup.lifeLogData ||
       !backup.lifeLogResultData
@@ -4419,12 +4849,10 @@ async function importBackup(
 
     }
 
-
     const result =
       confirm(
         "現在のLifeLogデータをバックアップの内容で置き換えます。\n\n復元しますか？"
       );
-
 
     if (
       !result
@@ -4434,14 +4862,12 @@ async function importBackup(
 
     }
 
-
     localStorage.setItem(
       STORAGE_KEY,
       JSON.stringify(
         backup.lifeLogData
       )
     );
-
 
     localStorage.setItem(
       RESULT_STORAGE_KEY,
@@ -4450,9 +4876,6 @@ async function importBackup(
       )
     );
 
-
-    // 新しいバックアップなら
-    // 写真も復元
     if (
       Array.isArray(
         backup.lifeLogPhotos
@@ -4465,14 +4888,11 @@ async function importBackup(
 
     }
 
-
     alert(
       "バックアップを復元しました。"
     );
 
-
     location.reload();
-
 
   } catch (error) {
 
@@ -4497,26 +4917,21 @@ const exportBackupButton =
     "exportBackupButton"
   );
 
-
 if (
   exportBackupButton
 ) {
 
   exportBackupButton
     .addEventListener(
-
       "click",
-
       () => {
 
         exportBackup();
 
       }
-
     );
 
 }
-
 
 // --------------------------------
 // 復元ボタン
@@ -4527,12 +4942,10 @@ const importBackupButton =
     "importBackupButton"
   );
 
-
 const backupFileInput =
   document.getElementById(
     "backupFileInput"
   );
-
 
 if (
   importBackupButton &&
@@ -4541,30 +4954,23 @@ if (
 
   importBackupButton
     .addEventListener(
-
       "click",
-
       () => {
 
         backupFileInput.click();
 
       }
-
     );
-
 
   backupFileInput
     .addEventListener(
-
       "change",
-
       event => {
 
         const file =
           event.target.files[
             0
           ];
-
 
         if (
           !file
@@ -4574,22 +4980,14 @@ if (
 
         }
 
-
         importBackup(
           file
         );
-
-
-        /*
-          同じファイルを
-          もう一度選べるようにする
-        */
 
         event.target.value =
           "";
 
       }
-
     );
 
 }
@@ -4605,13 +5003,11 @@ function updateDailyExpenseTotal() {
       "dailyExpenseTotal"
     );
 
-
   if (!totalElement) {
 
     return;
 
   }
-
 
   const total =
     dailyResults.expenses.reduce(
@@ -4633,7 +5029,6 @@ function updateDailyExpenseTotal() {
       0
     );
 
-
   totalElement.textContent =
     `${total.toLocaleString()}円`;
 
@@ -4650,17 +5045,14 @@ function renderExpenseResults() {
       "expenseResults"
     );
 
-
   if (!container) {
 
     return;
 
   }
 
-
   container.innerHTML =
     "";
-
 
   dailyResults.expenses.forEach(
     expense => {
@@ -4670,10 +5062,8 @@ function renderExpenseResults() {
           "div"
         );
 
-
       row.className =
         "expense-row";
-
 
       row.innerHTML = `
 
@@ -4705,7 +5095,6 @@ function renderExpenseResults() {
 
       `;
 
-
       container.appendChild(
         row
       );
@@ -4717,10 +5106,7 @@ function renderExpenseResults() {
 
   updateWeeklyExpenseSummary();
 
-  
-
 }
-
 
 // --------------------------------
 // 支出追加
@@ -4733,7 +5119,6 @@ function addExpense() {
       "何に使いましたか？"
     );
 
-
   if (
     name === null
   ) {
@@ -4742,10 +5127,8 @@ function addExpense() {
 
   }
 
-
   const trimmedName =
     name.trim();
-
 
   if (
     trimmedName === ""
@@ -4759,13 +5142,11 @@ function addExpense() {
 
   }
 
-
   const amountInput =
     prompt(
       "何円使いましたか？",
       "0"
     );
-
 
   if (
     amountInput === null
@@ -4775,12 +5156,10 @@ function addExpense() {
 
   }
 
-
   let amount =
     Number(
       amountInput
     );
-
 
   if (
     Number.isNaN(amount) ||
@@ -4795,12 +5174,10 @@ function addExpense() {
 
   }
 
-
   amount =
     Math.round(
       amount
     );
-
 
   const ids =
     dailyResults.expenses.map(
@@ -4810,12 +5187,10 @@ function addExpense() {
         ) || 0
     );
 
-
   const maxId =
     ids.length > 0
       ? Math.max(...ids)
       : 0;
-
 
   dailyResults.expenses.push({
 
@@ -4830,13 +5205,11 @@ function addExpense() {
 
   });
 
-
   saveDailyResults();
 
   renderExpenseResults();
 
 }
-
 
 // --------------------------------
 // 支出削除
@@ -4852,13 +5225,11 @@ function deleteExpense(
         expense.id !== id
     );
 
-
   saveDailyResults();
 
   renderExpenseResults();
 
 }
-
 
 // --------------------------------
 // 支出変更
@@ -4876,13 +5247,11 @@ function updateExpense(
         expense.id === id
     );
 
-
   if (!expense) {
 
     return;
 
   }
-
 
   if (
     type === "name"
@@ -4890,7 +5259,6 @@ function updateExpense(
 
     const newName =
       value.trim();
-
 
     if (
       newName === ""
@@ -4902,12 +5270,10 @@ function updateExpense(
 
     }
 
-
     expense.name =
       newName;
 
   }
-
 
   if (
     type === "amount"
@@ -4917,7 +5283,6 @@ function updateExpense(
       Number(
         value
       );
-
 
     if (
       Number.isNaN(amount) ||
@@ -4929,14 +5294,12 @@ function updateExpense(
 
     }
 
-
     expense.amount =
       Math.round(
         amount
       );
 
   }
-
 
   saveDailyResults();
 
@@ -4951,16 +5314,13 @@ const expenseResultsElement =
     "expenseResults"
   );
 
-
 if (
   expenseResultsElement
 ) {
 
   expenseResultsElement
     .addEventListener(
-
       "change",
-
       event => {
 
         const id =
@@ -4968,13 +5328,11 @@ if (
             event.target.dataset.id
           );
 
-
         if (!id) {
 
           return;
 
         }
-
 
         if (
           event.target.classList.contains(
@@ -4987,13 +5345,10 @@ if (
             "name",
             event.target.value
           );
-          
+
           renderExpenseResults();
 
-
         }
-
-        
 
         if (
           event.target.classList.contains(
@@ -5012,15 +5367,11 @@ if (
         }
 
       }
-
     );
-
 
   expenseResultsElement
     .addEventListener(
-
       "click",
-
       event => {
 
         const button =
@@ -5028,40 +5379,34 @@ if (
             ".expense-delete-button"
           );
 
-
         if (!button) {
 
           return;
 
         }
 
-
         const id =
           Number(
             button.dataset.id
           );
-
 
         deleteExpense(
           id
         );
 
       }
-
     );
 
 }
 
-
 // --------------------------------
 // ＋支出を追加
 // --------------------------------
- 
+
 const addExpenseButton =
   document.getElementById(
     "addExpenseButton"
   );
-
 
 if (
   addExpenseButton
@@ -5069,15 +5414,12 @@ if (
 
   addExpenseButton
     .addEventListener(
-
       "click",
-
       () => {
 
         addExpense();
 
       }
-
     );
 
 }
@@ -5090,7 +5432,6 @@ const dailyNoteInput =
   document.getElementById(
     "dailyNoteInput"
   );
-
 
 if (
   dailyNoteInput
@@ -5120,18 +5461,15 @@ const dailyPhotoInput =
     "dailyPhotoInput"
   );
 
-
 const selectPhotoButton =
   document.getElementById(
     "selectPhotoButton"
   );
 
-
 const deletePhotoButton =
   document.getElementById(
     "deletePhotoButton"
   );
-
 
 if (
   selectPhotoButton &&
@@ -5148,7 +5486,6 @@ if (
       }
     );
 
-
   dailyPhotoInput
     .addEventListener(
       "change",
@@ -5159,7 +5496,6 @@ if (
             0
           ];
 
-
         if (
           !file
         ) {
@@ -5167,7 +5503,6 @@ if (
           return;
 
         }
-
 
         if (
           !file.type.startsWith(
@@ -5185,79 +5520,44 @@ if (
 
         try {
 
-  
           console.log(
-    
             "圧縮前:",
-    
             Math.round(
-      
               file.size / 1024
-    
             ),
-    
             "KB"
-  
           );
 
-  
           const compressedImage =
-    
-          await compressImage(
-      
-            file
-    
-          );
+            await compressImage(
+              file
+            );
 
-  
-          
-  
           await saveDailyPhoto(
-    
             compressedImage
-  
           );
 
-  
           await renderDailyPhoto();
-
 
         } catch (error) {
 
-  
           console.error(
-    
             error
-  
           );
 
-  
           alert(
-    
             "写真の保存に失敗しました"
-  
           );
-
 
         }
 
+        event.target.value =
+          "";
 
-          
-
-
-        
-      event.target.value =
-          
-      "";
-
-      
-    }
-    
-  );
-
+      }
+    );
 
 }
-
 
 if (
   deletePhotoButton
@@ -5274,7 +5574,6 @@ if (
     );
 
 }
-
 
 // --------------------------------
 // 最初の表示

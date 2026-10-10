@@ -64,43 +64,122 @@
 
 
 
-      <div class="date-navigation">
+      
+      <div class="date-control-area">
 
+  
+        <div class="date-mode-switch">
 
-        <button
-          id="prevDateButton"
-          class="date-button"
+    
+          <button
+      
+          id="dayModeButton"
+  
+          class="date-mode-button active"
+   
           type="button"
-        >
-          ←
+  
+          >
+   
+  
+          日
+    
+ 
         </button>
 
-
+  
         <button
-          id="todayButton"
-          class="today-button"
-          type="button"
+   
+        id="monthModeButton"
+    
+    
+        class="date-mode-button"
+   
+        type="button"
+ 
         >
-          今日
-        </button>
+ 
+        月
+ 
+ 
+      </button>
+
+ 
+    </div>
 
 
-        <span
-          id="todayDate"
-          class="date"
+
+    <div class="date-navigation">
+
+    <button
+      id="prevDateButton"
+      class="date-button"
+      type="button"
+    >
+      ←
+    </button>
+
+
+    <button
+      id="todayButton"
+      class="today-button"
+      type="button"
+    >
+      今日
+    </button>
+
+
+   
+    <label class="date-picker-wrapper">
+
+    
+      <span
+    
+      id="todayDate"
+    
+      class="date"
+    
         ></span>
 
-
-        <button
-          id="nextDateButton"
-          class="date-button"
-          type="button"
+   
+        <input
+    
+        id="datePickerInput"
+    
+        class="date-picker-input"
+    
+        type="date"
+   
+        aria-label="日付を選択"
+   
         >
-          →
-        </button>
+
+   
+      </label>
 
 
-      </div>
+   
+      <button
+   
+      id="nextDateButton"
+   
+      class="date-button"
+   
+      type="button"
+
+      >
+ 
+      →
+ 
+    </button>
+
+
+ 
+  </div>
+
+
+
+</div>
 
 
     </header>

@@ -2547,3 +2547,398 @@ body {
 
   font-size: 18px;
 }
+
+/* ================================
+   日付移動モード
+================================ */
+
+.date-control-area {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+
+.date-mode-switch {
+  display: flex;
+  padding: 3px;
+
+  background: #171a20;
+
+  border: 1px solid #242830;
+  border-radius: 10px;
+}
+
+
+.date-mode-button {
+  min-width: 42px;
+  height: 30px;
+
+  padding: 0 12px;
+
+  border: 0;
+  border-radius: 7px;
+
+  background: transparent;
+
+  color: #737b89;
+
+  font-size: 12px;
+  font-weight: 600;
+
+  cursor: pointer;
+}
+
+
+.date-mode-button.active {
+  background: #292e38;
+
+  color: #ffffff;
+}
+
+
+/* ================================
+   日付ピッカー
+================================ */
+
+.date-picker-wrapper {
+  position: relative;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  min-width: 60px;
+
+  cursor: pointer;
+}
+
+
+.date-picker-input {
+  position: absolute;
+
+  inset: 0;
+
+  width: 100%;
+  height: 100%;
+
+  opacity: 0;
+
+  cursor: pointer;
+}
+
+
+/* スマホ */
+@media (max-width: 520px) {
+
+  .date-control-area {
+    width: 100%;
+    align-items: stretch;
+  }
+
+
+  .date-mode-switch {
+    align-self: flex-end;
+  }
+
+}
+/* ================================
+   予定 編集・並び替え
+================================ */
+
+.schedule-item {
+  grid-template-columns:
+    28px
+    38px
+    56px
+    minmax(0, 1fr)
+    56px
+    34px;
+
+  column-gap: 3px;
+}
+
+
+.drag-handle,
+.drag-placeholder {
+  width: 26px;
+}
+
+
+.drag-handle {
+  height: 36px;
+
+  padding: 0;
+
+  border: none;
+  border-radius: 7px;
+
+  background: transparent;
+
+  color: #626a77;
+
+  font-size: 18px;
+
+  cursor: grab;
+
+  user-select: none;
+
+  touch-action: none;
+
+  transition:
+    background 0.15s,
+    color 0.15s;
+}
+
+
+.drag-handle:active {
+  cursor: grabbing;
+}
+
+
+.drag-handle:disabled {
+  opacity: 0.25;
+  cursor: default;
+}
+
+
+.schedule-edit-button,
+.schedule-action-placeholder {
+  width: 32px;
+  height: 32px;
+}
+
+
+.schedule-edit-button {
+  border: none;
+  border-radius: 7px;
+
+  background: transparent;
+
+  color: #777f8c;
+
+  font-size: 17px;
+
+  cursor: pointer;
+
+  transition:
+    background 0.15s,
+    color 0.15s;
+}
+
+
+@media (hover: hover) {
+
+  .drag-handle:hover,
+  .schedule-edit-button:hover {
+    background: #252a33;
+    color: #ffffff;
+  }
+
+}
+
+
+.schedule-item.dragging {
+  position: relative;
+
+  z-index: 5;
+
+  background: #20242c;
+
+  border-radius: 12px;
+
+  opacity: 0.72;
+}
+
+
+.schedule-item.editing {
+  padding-bottom: 12px;
+}
+
+
+/* ================================
+   編集パネル
+================================ */
+
+.schedule-edit-panel {
+  grid-column:
+    1 / -1;
+
+  display: grid;
+
+  grid-template-columns:
+    90px
+    minmax(0, 1fr)
+    auto;
+
+  gap: 8px;
+
+  align-items: center;
+
+  padding:
+    12px 0 4px;
+}
+
+
+.schedule-edit-time,
+.schedule-edit-name {
+  min-width: 0;
+
+  height: 40px;
+
+  padding: 0 10px;
+
+  border:
+    1px solid #303641;
+
+  border-radius: 9px;
+
+  outline: none;
+
+  background: #20242c;
+
+  color: #ffffff;
+
+  font-size: 14px;
+}
+
+
+.schedule-edit-time:focus,
+.schedule-edit-name:focus {
+  border-color: #8c96ff;
+}
+
+
+.schedule-edit-actions {
+  display: flex;
+
+  gap: 6px;
+}
+
+
+.schedule-save-button,
+.schedule-cancel-button,
+.schedule-edit-delete-button {
+  height: 38px;
+
+  padding: 0 12px;
+
+  border: none;
+
+  border-radius: 8px;
+
+  font-size: 12px;
+  font-weight: 600;
+
+  cursor: pointer;
+}
+
+
+.schedule-save-button {
+  background: #8c96ff;
+
+  color: #ffffff;
+}
+
+
+.schedule-cancel-button {
+  background: #292e37;
+
+  color: #aeb5c0;
+}
+
+
+.schedule-edit-delete-button {
+  background: transparent;
+
+  color: #e2767e;
+}
+
+
+@media (hover: hover) {
+
+  .schedule-edit-delete-button:hover {
+    background: #342126;
+  }
+
+}
+
+
+body.schedule-reordering {
+  user-select: none;
+}
+
+
+/* ================================
+   スマホ
+================================ */
+
+@media (max-width: 520px) {
+
+  .schedule-item {
+    grid-template-columns:
+      24px
+      34px
+      48px
+      minmax(0, 1fr)
+      45px
+      30px;
+
+    column-gap: 2px;
+  }
+
+
+  .drag-handle,
+  .drag-placeholder {
+    width: 22px;
+  }
+
+
+  .drag-handle {
+    font-size: 16px;
+  }
+
+
+  .plan-time {
+    font-size: 12px;
+  }
+
+
+  .task-name {
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+
+    white-space: nowrap;
+
+    font-size: 13px;
+  }
+
+
+  .actual-time {
+    font-size: 11px;
+  }
+
+
+  .schedule-edit-button,
+  .schedule-action-placeholder {
+    width: 28px;
+  }
+
+
+  .schedule-edit-panel {
+    grid-template-columns:
+      84px
+      minmax(0, 1fr);
+  }
+
+
+  .schedule-edit-actions {
+    grid-column:
+      1 / -1;
+
+    justify-content: flex-end;
+  }
+
+}
