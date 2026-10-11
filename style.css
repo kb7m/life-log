@@ -2942,3 +2942,99 @@ body.schedule-reordering {
   }
 
 }
+
+/* ================================
+   1日のまとめ
+================================ */
+
+.daily-summary-card {
+  margin-top: 18px;
+}
+
+
+.daily-summary-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  margin-bottom: 16px;
+}
+
+
+.daily-summary-header h2 {
+  margin: 0;
+
+  color: #ffffff;
+
+  font-size: 17px;
+  font-weight: 650;
+}
+
+
+.daily-summary-date {
+  color: #737b88;
+
+  font-size: 12px;
+}
+
+
+/* ================================
+   達成率
+================================ */
+
+.daily-summary-achievement {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding-bottom: 16px;
+
+  color: #8e95a1;
+
+  font-size: 14px;
+}
+
+
+.daily-summary-achievement strong {
+  color: #ffffff;
+
+  font-size: 18px;
+}
+
+
+/* ================================
+   活動・支出
+================================ */
+
+.daily-summary-section {
+  padding-top: 16px;
+  margin-top: 2px;
+
+  border-top: 1px solid #2b3038;
+}
+
+
+.daily-summary-section
++ .daily-summary-section {
+  margin-top: 18px;
+}
+
+
+.daily-summary-total-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  margin-bottom: 10px;
+
+  color: #8e95a1;
+
+  font-size: 14px;
+}
+
+
+.daily-summary-total-row strong {
+  color: #ffffff;
+
+  font-size: 18px;
+}

@@ -1510,6 +1510,8 @@ function renderSchedules() {
 
   updateDate();
 
+  updateDailySummary();
+
   updateWeeklySummary();
 
   if (
@@ -2781,6 +2783,449 @@ function updateMonthlySummary() {
   );
 
 }
+
+// --------------------------------
+// 1日の活動を集計
+// --------------------------------
+
+function calculateDailyActivitySummary() {
+
+  const totals =
+    {};
+
+  let totalMinutes =
+    0;
+
+
+  if (
+    !Array.isArray(
+      dailyResults.activities
+    )
+  ) {
+
+    return {
+      totalMinutes,
+      totals
+    };
+
+  }
+
+
+  dailyResults.activities.forEach(
+    activity => {
+
+      const name =
+        String(
+          activity.name ||
+          ""
+        ).trim();
+
+
+      const minutes =
+        Number(
+          activity.minutes
+        ) || 0;
+
+
+      if (
+        name === "" ||
+        name === "起床" ||
+        name === "就寝" ||
+        minutes <= 0
+      ) {
+
+        return;
+
+      }
+
+
+      if (
+        !totals[name]
+      ) {
+
+        totals[name] =
+          0;
+
+      }
+
+
+      totals[name] +=
+        minutes;
+
+
+      totalMinutes +=
+        minutes;
+
+    }
+  );
+
+
+  return {
+    totalMinutes,
+    totals
+  };
+
+}
+
+
+
+// --------------------------------
+// 1日の支出を集計
+// --------------------------------
+
+function calculateDailyExpenseSummary() {
+
+  let total =
+    0;
+
+
+  const breakdown =
+    {};
+
+
+  if (
+    !Array.isArray(
+      dailyResults.expenses
+    )
+  ) {
+
+    return {
+      total,
+      breakdown
+    };
+
+  }
+
+
+  dailyResults.expenses.forEach(
+    expense => {
+
+      const name =
+        String(
+          expense.name ||
+          ""
+        ).trim();
+
+
+      const amount =
+        Number(
+          expense.amount
+        ) || 0;
+
+
+      if (
+        name === "" ||
+        amount <= 0
+      ) {
+
+        return;
+
+      }
+
+
+      total +=
+        amount;
+
+
+      if (
+        !breakdown[name]
+      ) {
+
+        breakdown[name] =
+          0;
+
+      }
+
+
+      breakdown[name] +=
+        amount;
+
+    }
+  );
+
+
+  return {
+    total,
+    breakdown
+  };
+
+}
+
+
+
+// --------------------------------
+// 1日のまとめ表示
+// --------------------------------
+
+function updateDailySummary() {
+
+  const dateElement =
+    document.getElementById(
+      "dailySummaryDate"
+    );
+
+
+  const achievementElement =
+    document.getElementById(
+      "dailyAchievementSummary"
+    );
+
+
+  const activityTotalElement =
+    document.getElementById(
+      "dailyActivityTotal"
+    );
+
+
+  const activityContainer =
+    document.getElementById(
+      "dailyActivitySummary"
+    );
+
+
+  const expenseTotalElement =
+    document.getElementById(
+      "dailySummaryExpenseTotal"
+    );
+
+
+  const expenseContainer =
+    document.getElementById(
+      "dailyExpenseSummary"
+    );
+
+
+  if (
+    !dateElement ||
+    !achievementElement ||
+    !activityTotalElement ||
+    !activityContainer ||
+    !expenseTotalElement ||
+    !expenseContainer
+  ) {
+
+    return;
+
+  }
+
+
+  // ----------------------------
+  // 日付
+  // ----------------------------
+
+  const date =
+    dateKeyToDate(
+      selectedDateKey
+    );
+
+
+  dateElement.textContent =
+    `${
+      date.getMonth() + 1
+    }/${date.getDate()}`;
+
+
+
+  // ----------------------------
+  // 達成率
+  // ----------------------------
+
+  const completed =
+    schedules.filter(
+      schedule =>
+        schedule.completed
+    ).length;
+
+
+  const scheduleCount =
+    schedules.length;
+
+
+  const achievementPercent =
+    scheduleCount > 0
+
+      ? Math.round(
+          (
+            completed /
+            scheduleCount
+          ) * 100
+        )
+
+      : 0;
+
+
+  achievementElement.textContent =
+    `${completed} / ${scheduleCount} ・ ${achievementPercent}%`;
+
+
+
+  // ----------------------------
+  // 活動
+  // ----------------------------
+
+  const activitySummary =
+    calculateDailyActivitySummary();
+
+
+  activityTotalElement.textContent =
+    formatDuration(
+      activitySummary.totalMinutes
+    );
+
+
+  activityContainer.innerHTML =
+    "";
+
+
+  const activities =
+    Object.entries(
+      activitySummary.totals
+    );
+
+
+  activities.sort(
+    (a, b) =>
+      b[1] - a[1]
+  );
+
+
+  if (
+    activities.length ===
+    0
+  ) {
+
+    activityContainer.innerHTML = `
+      <p class="weekly-empty">
+        まだ実績がありません
+      </p>
+    `;
+
+  } else {
+
+    activities.forEach(
+      ([name, minutes]) => {
+
+        const row =
+          document.createElement(
+            "div"
+          );
+
+
+        row.className =
+          "weekly-activity-row";
+
+
+        row.innerHTML = `
+
+          <span
+            class="weekly-activity-name"
+          >
+            ${escapeHtml(name)}
+          </span>
+
+          <strong
+            class="weekly-activity-time"
+          >
+            ${formatDuration(minutes)}
+          </strong>
+
+        `;
+
+
+        activityContainer.appendChild(
+          row
+        );
+
+      }
+    );
+
+  }
+
+
+
+  // ----------------------------
+  // 支出
+  // ----------------------------
+
+  const expenseSummary =
+    calculateDailyExpenseSummary();
+
+
+  expenseTotalElement.textContent =
+    `${expenseSummary.total.toLocaleString()}円`;
+
+
+  expenseContainer.innerHTML =
+    "";
+
+
+  const expenses =
+    Object.entries(
+      expenseSummary.breakdown
+    );
+
+
+  expenses.sort(
+    (a, b) =>
+      b[1] - a[1]
+  );
+
+
+  if (
+    expenses.length ===
+    0
+  ) {
+
+    expenseContainer.innerHTML = `
+      <p class="weekly-expense-empty">
+        まだ支出がありません
+      </p>
+    `;
+
+    return;
+
+  }
+
+
+  expenses.forEach(
+    ([name, amount]) => {
+
+      const row =
+        document.createElement(
+          "div"
+        );
+
+
+      row.className =
+        "weekly-expense-row";
+
+
+      row.innerHTML = `
+
+        <span
+          class="weekly-expense-name"
+        >
+          ${escapeHtml(name)}
+        </span>
+
+        <strong
+          class="weekly-expense-amount"
+        >
+          ${amount.toLocaleString()}円
+        </strong>
+
+      `;
+
+
+      expenseContainer.appendChild(
+        row
+      );
+
+    }
+  );
+
+}
+
 // --------------------------------
 // 起床・就寝・達成数を表示
 // --------------------------------
@@ -3033,6 +3478,7 @@ function deleteActivity(
         activity.id === id
     );
 
+
   if (
     !activity
   ) {
@@ -3041,10 +3487,12 @@ function deleteActivity(
 
   }
 
+
   const result =
     confirm(
       `「${activity.name}」を削除しますか？`
     );
+
 
   if (
     !result
@@ -3054,15 +3502,22 @@ function deleteActivity(
 
   }
 
+
   dailyResults.activities =
     dailyResults.activities.filter(
       activity =>
         activity.id !== id
     );
 
+
   saveDailyResults();
 
+
   renderActivityResults();
+
+
+  updateDailySummary();
+
 
   updateWeeklySummary();
 
@@ -3156,6 +3611,8 @@ function updateActivity(
   }
 
   saveDailyResults();
+
+  updateDailySummary();
 
   updateWeeklySummary();
 
@@ -5103,6 +5560,8 @@ function renderExpenseResults() {
   );
 
   updateDailyExpenseTotal();
+
+  updateDailySummary();
 
   updateWeeklyExpenseSummary();
 
