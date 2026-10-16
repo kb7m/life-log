@@ -1106,19 +1106,463 @@ let dailyResults =
   );
 
 // --------------------------------
+// Supabase 自動同期
+// --------------------------------
+
+let cloudSyncReady =
+  false;
+
+const CLOUD_SAVE_DELAY_MS =
+  700;
+
+const cloudSaveTimers =
+  new Map();
+
+const dirtyCloudDates =
+  new Set();
+
+let cloudSaveInFlightCount =
+  0;
+
+let lastCloudPullAt =
+  0;
+
+
+// --------------------------------
+// 1日分をSupabaseへ保存
+// --------------------------------
+
+async function saveDayToCloud(
+  dateKey
+) {
+
+  if (
+    !cloudSyncReady ||
+    !dateKey
+  ) {
+
+    return false;
+
+  }
+
+
+  const {
+    data: sessionData,
+    error: sessionError
+  } =
+    await supabaseClient.auth
+      .getSession();
+
+
+  if (
+    sessionError
+  ) {
+
+    console.error(
+      "クラウド保存用セッション取得エラー:",
+      sessionError
+    );
+
+    return false;
+
+  }
+
+
+  const user =
+    sessionData.session?.user;
+
+
+  if (
+    !user
+  ) {
+
+    return false;
+
+  }
+
+
+  const daySchedules =
+    Array.isArray(
+      allData[
+        dateKey
+      ]
+    )
+      ? allData[
+          dateKey
+        ]
+      : [];
+
+
+  const sourceResults =
+    allResultData[
+      dateKey
+    ];
+
+
+  const dayResults =
+    (
+      sourceResults &&
+      typeof sourceResults ===
+        "object" &&
+      !Array.isArray(
+        sourceResults
+      )
+    )
+      ? sourceResults
+      : createDefaultDailyResults();
+
+
+  const schedulesSnapshot =
+    JSON.parse(
+      JSON.stringify(
+        daySchedules
+      )
+    );
+
+
+  const resultsSnapshot =
+    JSON.parse(
+      JSON.stringify(
+        dayResults
+      )
+    );
+
+
+  cloudSaveInFlightCount +=
+    1;
+
+
+  try {
+
+    const {
+      error
+    } =
+      await supabaseClient
+        .from(
+          "lifelog_days"
+        )
+        .upsert(
+          {
+            user_id:
+              user.id,
+
+            date:
+              dateKey,
+
+            schedules:
+              schedulesSnapshot,
+
+            results:
+              resultsSnapshot,
+
+            updated_at:
+              new Date()
+                .toISOString()
+          },
+          {
+            onConflict:
+              "user_id,date"
+          }
+        );
+
+
+    if (
+      error
+    ) {
+
+      throw error;
+
+    }
+
+
+    dirtyCloudDates.delete(
+      dateKey
+    );
+
+
+    console.log(
+      `Supabaseへ保存: ${dateKey}`
+    );
+
+
+    return true;
+
+  } catch (
+    error
+  ) {
+
+    console.error(
+      `クラウド保存エラー (${dateKey}):`,
+      error
+    );
+
+
+    return false;
+
+  } finally {
+
+    cloudSaveInFlightCount -=
+      1;
+
+  }
+
+}
+
+
+// --------------------------------
+// クラウド保存を少し遅らせてまとめる
+// --------------------------------
+
+function scheduleCloudSave(
+  dateKey
+) {
+
+  if (
+    !cloudSyncReady ||
+    !dateKey
+  ) {
+
+    return;
+
+  }
+
+
+  dirtyCloudDates.add(
+    dateKey
+  );
+
+
+  const oldTimer =
+    cloudSaveTimers.get(
+      dateKey
+    );
+
+
+  if (
+    oldTimer
+  ) {
+
+    clearTimeout(
+      oldTimer
+    );
+
+  }
+
+
+  const timer =
+    setTimeout(
+      async () => {
+
+        cloudSaveTimers.delete(
+          dateKey
+        );
+
+
+        await saveDayToCloud(
+          dateKey
+        );
+
+      },
+      CLOUD_SAVE_DELAY_MS
+    );
+
+
+  cloudSaveTimers.set(
+    dateKey,
+    timer
+  );
+
+}
+
+
+// --------------------------------
+// 指定日の保留中保存を即実行
+// --------------------------------
+
+async function flushCloudSave(
+  dateKey
+) {
+
+  const timer =
+    cloudSaveTimers.get(
+      dateKey
+    );
+
+
+  if (
+    timer
+  ) {
+
+    clearTimeout(
+      timer
+    );
+
+
+    cloudSaveTimers.delete(
+      dateKey
+    );
+
+  }
+
+
+  return await saveDayToCloud(
+    dateKey
+  );
+
+}
+
+
+// --------------------------------
+// 保留中の保存を全部実行
+// --------------------------------
+
+async function flushAllPendingCloudSaves() {
+
+  const dateKeys =
+    [
+      ...new Set([
+        ...cloudSaveTimers.keys(),
+        ...dirtyCloudDates
+      ])
+    ];
+
+
+  if (
+    dateKeys.length === 0
+  ) {
+
+    return;
+
+  }
+
+
+  await Promise.allSettled(
+    dateKeys.map(
+      dateKey =>
+        flushCloudSave(
+          dateKey
+        )
+    )
+  );
+
+}
+
+
+// --------------------------------
+// 他端末の変更を安全に再取得
+// --------------------------------
+
+async function refreshCloudDataIfSafe() {
+
+  if (
+    !cloudSyncReady
+  ) {
+
+    return;
+
+  }
+
+
+  if (
+    cloudSaveTimers.size > 0 ||
+    dirtyCloudDates.size > 0
+  ) {
+
+    await flushAllPendingCloudSaves();
+
+  }
+
+
+  if (
+    dirtyCloudDates.size > 0 ||
+    cloudSaveInFlightCount > 0
+  ) {
+
+    return;
+
+  }
+
+
+  const now =
+    Date.now();
+
+
+  if (
+    now -
+      lastCloudPullAt <
+    1000
+  ) {
+
+    return;
+
+  }
+
+
+  await loadCloudDataToLocal();
+
+}
+
+
+// --------------------------------
+// バックグラウンド前に保存 / 復帰時に再取得
+// --------------------------------
+
+document.addEventListener(
+  "visibilitychange",
+  () => {
+
+    if (
+      document.visibilityState ===
+      "hidden"
+    ) {
+
+      void flushAllPendingCloudSaves();
+
+      return;
+
+    }
+
+
+    void refreshCloudDataIfSafe();
+
+  }
+);
+
+
+window.addEventListener(
+  "focus",
+  () => {
+
+    void refreshCloudDataIfSafe();
+
+  }
+);
+  
+// --------------------------------
 // 予定保存
 // --------------------------------
 
 function saveSchedules() {
 
+  const dateKey =
+    selectedDateKey;
+
+
   allData[
-    selectedDateKey
+    dateKey
   ] =
     schedules;
 
+
   saveAllData();
 
+
+  scheduleCloudSave(
+    dateKey
+  );
+
 }
+
 
 // --------------------------------
 // 実績保存
@@ -1126,12 +1570,22 @@ function saveSchedules() {
 
 function saveDailyResults() {
 
+  const dateKey =
+    selectedDateKey;
+
+
   allResultData[
-    selectedDateKey
+    dateKey
   ] =
     dailyResults;
 
+
   saveAllResultData();
+
+
+  scheduleCloudSave(
+    dateKey
+  );
 
 }
 
@@ -6186,6 +6640,8 @@ async function loginWithEmail() {
     data.user
   );
 
+  await loadCloudDataToLocal();
+
 }
 
 
@@ -6312,6 +6768,212 @@ authPassword?.addEventListener(
   }
 );
 
+// --------------------------------
+// Supabase → ローカルへ読み込み
+// --------------------------------
+
+async function loadCloudDataToLocal() {
+
+  cloudSyncReady =
+    false;
+
+
+  const {
+    data: sessionData,
+    error: sessionError
+  } =
+    await supabaseClient.auth
+      .getSession();
+
+
+  if (
+    sessionError
+  ) {
+
+    console.error(
+      "セッション取得エラー:",
+      sessionError
+    );
+
+    return false;
+
+  }
+
+
+  const user =
+    sessionData.session?.user;
+
+
+  if (
+    !user
+  ) {
+
+    return false;
+
+  }
+
+
+  const {
+    data: rows,
+    error
+  } =
+    await supabaseClient
+      .from(
+        "lifelog_days"
+      )
+      .select(
+        "date, schedules, results"
+      )
+      .order(
+        "date",
+        {
+          ascending: true
+        }
+      );
+
+
+  if (
+    error
+  ) {
+
+    console.error(
+      "クラウド読込エラー:",
+      error
+    );
+
+    return false;
+
+  }
+
+
+  if (
+    !rows ||
+    rows.length === 0
+  ) {
+
+    console.log(
+      "クラウドにLifeLogデータがありません"
+    );
+
+    return false;
+
+  }
+
+
+  const cloudData =
+    {};
+
+  const cloudResultData =
+    {};
+
+
+  rows.forEach(
+    row => {
+
+      if (
+        !/^\d{4}-\d{2}-\d{2}$/.test(
+          row.date
+        )
+      ) {
+
+        return;
+
+      }
+
+
+      cloudData[
+        row.date
+      ] =
+        Array.isArray(
+          row.schedules
+        )
+          ? row.schedules
+          : [];
+
+
+      cloudResultData[
+        row.date
+      ] =
+        (
+          row.results &&
+          typeof row.results ===
+            "object" &&
+          !Array.isArray(
+            row.results
+          )
+        )
+          ? row.results
+          : createDefaultDailyResults();
+
+    }
+  );
+
+
+  allData =
+    cloudData;
+
+  allResultData =
+    cloudResultData;
+
+
+  saveAllData();
+
+  saveAllResultData();
+
+
+  schedules =
+    loadSchedulesForDate(
+      selectedDateKey
+    );
+
+
+  dailyResults =
+    loadResultsForDate(
+      selectedDateKey
+    );
+
+
+  renderSchedules();
+
+
+  dirtyCloudDates.clear();
+
+
+  cloudSyncReady =
+    true;
+
+
+  lastCloudPullAt =
+    Date.now();
+
+
+  const migrationButton =
+    document.getElementById(
+      "cloudMigrationButton"
+    );
+
+
+  if (
+    migrationButton
+  ) {
+
+    migrationButton.disabled =
+      true;
+
+    migrationButton.textContent =
+      "クラウド移行済み";
+
+  }
+
+
+  console.log(
+    `Supabaseから${rows.length}日分を読み込みました`
+  );
+
+
+  return true;
+
+}
 
 // --------------------------------
 // 現在のログイン状態
@@ -6326,10 +6988,23 @@ async function initializeAuth() {
       .getSession();
 
 
-  setAuthView(
+  const user =
     data.session?.user ||
-    null
+    null;
+
+
+  setAuthView(
+    user
   );
+
+
+  if (
+    user
+  ) {
+
+    await loadCloudDataToLocal();
+
+  }
 
 }
 
@@ -6585,6 +7260,14 @@ async function migrateLocalDataToCloud() {
       `${dateKeys.length}日分のLifeLogデータをクラウドへ移行しました。\n\nAndroidのローカルデータはそのまま残っています。`
     );
 
+    
+    cloudSyncReady =
+  
+    true;
+
+    lastCloudPullAt =
+    Date.now();
+
 
     if (
       button
@@ -6659,14 +7342,27 @@ supabaseClient.auth
       session
     ) => {
 
-      setAuthView(
+      const user =
         session?.user ||
-        null
+        null;
+
+
+      if (
+        !user
+      ) {
+
+        cloudSyncReady =
+          false;
+
+      }
+
+
+      setAuthView(
+        user
       );
 
     }
   );
-
 
 initializeAuth();
 
