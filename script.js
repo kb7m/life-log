@@ -73,6 +73,98 @@ const PHOTO_DB_VERSION =
 const PHOTO_STORE_NAME =
   "dailyPhotos";
 
+const PHOTO_BUCKET_NAME =
+  "lifelog-photos";
+
+const PHOTO_CLOUD_INDEX_KEY =
+  "lifeLogCloudPhotoIndex";
+
+const PHOTO_PENDING_UPLOAD_KEY =
+  "lifeLogPendingPhotoUploads";
+
+let cloudPhotoDates =
+  new Set();
+
+let photoSyncReady =
+  false;
+
+const cloudPhotoDownloadedDates =
+  new Set();
+
+function loadPhotoDateSet(
+  key
+) {
+
+  try {
+
+    const raw =
+      localStorage.getItem(
+        key
+      );
+
+    if (!raw) {
+      return new Set();
+    }
+
+    const values =
+      JSON.parse(
+        raw
+      );
+
+    if (
+      !Array.isArray(
+        values
+      )
+    ) {
+      return new Set();
+    }
+
+    return new Set(
+      values.filter(
+        value =>
+          /^\d{4}-\d{2}-\d{2}$/.test(
+            String(value)
+          )
+      )
+    );
+
+  } catch (error) {
+
+    console.error(
+      "写真同期状態の読み込みに失敗しました:",
+      error
+    );
+
+    return new Set();
+
+  }
+
+}
+
+function savePhotoDateSet(
+  key,
+  dateSet
+) {
+
+  localStorage.setItem(
+    key,
+    JSON.stringify(
+      [...dateSet]
+    )
+  );
+
+}
+
+let knownCloudPhotoDates =
+  loadPhotoDateSet(
+    PHOTO_CLOUD_INDEX_KEY
+  );
+
+let pendingPhotoUploadDates =
+  loadPhotoDateSet(
+    PHOTO_PENDING_UPLOAD_KEY
+  );
+
 // --------------------------------
 // IndexedDBを開く
 // --------------------------------
@@ -287,7 +379,8 @@ function compressImage(
 // --------------------------------
 
 async function saveDailyPhoto(
-  file
+  file,
+  dateKey = selectedDateKey
 ) {
 
   const db =
@@ -309,7 +402,7 @@ async function saveDailyPhoto(
 
       store.put({
         date:
-          selectedDateKey,
+          dateKey,
 
         image:
           file
@@ -344,7 +437,9 @@ async function saveDailyPhoto(
 // 写真取得
 // --------------------------------
 
-async function getDailyPhoto() {
+async function getDailyPhoto(
+  dateKey = selectedDateKey
+) {
 
   const db =
     await openPhotoDB();
@@ -365,7 +460,7 @@ async function getDailyPhoto() {
 
       const request =
         store.get(
-          selectedDateKey
+          dateKey
         );
 
       request.onsuccess =
@@ -374,7 +469,8 @@ async function getDailyPhoto() {
           db.close();
 
           resolve(
-            request.result || null
+            request.result ||
+            null
           );
 
         };
@@ -404,6 +500,9 @@ let currentPhotoUrl =
 
 async function renderDailyPhoto() {
 
+  const dateKey =
+    selectedDateKey;
+
   const container =
     document.getElementById(
       "dailyPhotoPreview"
@@ -415,9 +514,7 @@ async function renderDailyPhoto() {
     );
 
   if (!container) {
-
     return;
-
   }
 
   if (
@@ -433,8 +530,64 @@ async function renderDailyPhoto() {
 
   }
 
-  const photo =
-    await getDailyPhoto();
+  let photo =
+    await getDailyPhoto(
+      dateKey
+    );
+
+
+  // クラウドに写真がある場合は最新版を取得
+  if (
+    photoSyncReady &&
+    cloudPhotoDates.has(
+      dateKey
+    ) &&
+    !cloudPhotoDownloadedDates.has(
+      dateKey
+    )
+  ) {
+
+    const downloaded =
+      await downloadPhotoFromCloud(
+        dateKey
+      );
+
+    if (
+      downloaded
+    ) {
+
+      cloudPhotoDownloadedDates.add(
+        dateKey
+      );
+
+    }
+
+    if (
+      selectedDateKey !==
+      dateKey
+    ) {
+
+      return;
+
+    }
+
+    photo =
+      await getDailyPhoto(
+        dateKey
+      );
+
+  }
+
+
+  if (
+    selectedDateKey !==
+    dateKey
+  ) {
+
+    return;
+
+  }
+
 
   if (
     !photo
@@ -459,6 +612,7 @@ async function renderDailyPhoto() {
 
   }
 
+
   currentPhotoUrl =
     URL.createObjectURL(
       photo.image
@@ -470,6 +624,7 @@ async function renderDailyPhoto() {
       alt="今日の写真"
     >
   `;
+
 
   if (
     deleteButton
@@ -486,25 +641,14 @@ async function renderDailyPhoto() {
 // 写真削除
 // --------------------------------
 
-async function deleteDailyPhoto() {
-
-  const result =
-    confirm(
-      "この日の写真を削除しますか？"
-    );
-
-  if (
-    !result
-  ) {
-
-    return;
-
-  }
+async function deleteLocalPhoto(
+  dateKey
+) {
 
   const db =
     await openPhotoDB();
 
-  await new Promise(
+  return new Promise(
     (resolve, reject) => {
 
       const transaction =
@@ -518,7 +662,7 @@ async function deleteDailyPhoto() {
           PHOTO_STORE_NAME
         )
         .delete(
-          selectedDateKey
+          dateKey
         );
 
       transaction.oncomplete =
@@ -544,7 +688,56 @@ async function deleteDailyPhoto() {
     }
   );
 
-  renderDailyPhoto();
+}
+
+
+async function deleteDailyPhoto() {
+
+  const dateKey =
+    selectedDateKey;
+
+  const result =
+    confirm(
+      "この日の写真を削除しますか？"
+    );
+
+  if (!result) {
+    return;
+  }
+
+
+  const cloudDeleted =
+    await deletePhotoFromCloud(
+      dateKey
+    );
+
+
+  if (
+    !cloudDeleted
+  ) {
+
+    alert(
+      "クラウド側の写真を削除できませんでした。\n\n通信状態を確認して、もう一度お試しください。"
+    );
+
+    return;
+
+  }
+
+
+  await deleteLocalPhoto(
+    dateKey
+  );
+
+
+  if (
+    selectedDateKey ===
+    dateKey
+  ) {
+
+    await renderDailyPhoto();
+
+  }
 
 }
 
@@ -1499,6 +1692,12 @@ async function refreshCloudDataIfSafe() {
 
 
   await loadCloudDataToLocal();
+
+  await loadCloudPhotoIndex();
+
+  await updateCloudMigrationButtonForPhotos();
+
+  await renderDailyPhoto();
 
 }
 
@@ -6365,6 +6564,779 @@ if (
 
 }
 
+
+// --------------------------------
+// Supabase Storage 写真同期
+// --------------------------------
+
+function getCloudPhotoPath(
+  userId,
+  dateKey
+) {
+
+  return `${userId}/${dateKey}.jpg`;
+
+}
+
+
+async function getLoggedInUser() {
+
+  const {
+    data,
+    error
+  } =
+    await supabaseClient.auth
+      .getSession();
+
+
+  if (
+    error
+  ) {
+
+    console.error(
+      "写真同期用セッション取得エラー:",
+      error
+    );
+
+    return null;
+
+  }
+
+
+  return (
+    data.session?.user ||
+    null
+  );
+
+}
+
+
+// --------------------------------
+// 写真アップロード
+// --------------------------------
+
+async function uploadPhotoToCloud(
+  dateKey,
+  blob
+) {
+
+  const user =
+    await getLoggedInUser();
+
+
+  if (
+    !user
+  ) {
+
+    return false;
+
+  }
+
+
+  const path =
+    getCloudPhotoPath(
+      user.id,
+      dateKey
+    );
+
+
+  pendingPhotoUploadDates.add(
+    dateKey
+  );
+
+  savePhotoDateSet(
+    PHOTO_PENDING_UPLOAD_KEY,
+    pendingPhotoUploadDates
+  );
+
+
+  const {
+    error
+  } =
+    await supabaseClient
+      .storage
+      .from(
+        PHOTO_BUCKET_NAME
+      )
+      .upload(
+        path,
+        blob,
+        {
+          contentType:
+            "image/jpeg",
+
+          cacheControl:
+            "3600",
+
+          upsert:
+            true
+        }
+      );
+
+
+  if (
+    error
+  ) {
+
+    console.error(
+      `写真クラウド保存エラー (${dateKey}):`,
+      error
+    );
+
+    return false;
+
+  }
+
+
+  cloudPhotoDates.add(
+    dateKey
+  );
+
+  knownCloudPhotoDates.add(
+    dateKey
+  );
+
+  pendingPhotoUploadDates.delete(
+    dateKey
+  );
+
+
+  savePhotoDateSet(
+    PHOTO_CLOUD_INDEX_KEY,
+    knownCloudPhotoDates
+  );
+
+  savePhotoDateSet(
+    PHOTO_PENDING_UPLOAD_KEY,
+    pendingPhotoUploadDates
+  );
+
+
+  cloudPhotoDownloadedDates.add(
+    dateKey
+  );
+
+
+  console.log(
+    `写真をSupabaseへ保存: ${dateKey}`
+  );
+
+
+  return true;
+
+}
+
+
+// --------------------------------
+// 写真ダウンロード
+// --------------------------------
+
+async function downloadPhotoFromCloud(
+  dateKey
+) {
+
+  const user =
+    await getLoggedInUser();
+
+
+  if (
+    !user
+  ) {
+
+    return false;
+
+  }
+
+
+  const path =
+    getCloudPhotoPath(
+      user.id,
+      dateKey
+    );
+
+
+  const {
+    data,
+    error
+  } =
+    await supabaseClient
+      .storage
+      .from(
+        PHOTO_BUCKET_NAME
+      )
+      .download(
+        path
+      );
+
+
+  if (
+    error
+  ) {
+
+    console.error(
+      `写真クラウド読込エラー (${dateKey}):`,
+      error
+    );
+
+    return false;
+
+  }
+
+
+  await saveDailyPhoto(
+    data,
+    dateKey
+  );
+
+
+  cloudPhotoDownloadedDates.add(
+    dateKey
+  );
+
+
+  return true;
+
+}
+
+
+// --------------------------------
+// 写真削除
+// --------------------------------
+
+async function deletePhotoFromCloud(
+  dateKey
+) {
+
+  const user =
+    await getLoggedInUser();
+
+
+  if (
+    !user
+  ) {
+
+    return false;
+
+  }
+
+
+  const path =
+    getCloudPhotoPath(
+      user.id,
+      dateKey
+    );
+
+
+  const {
+    error
+  } =
+    await supabaseClient
+      .storage
+      .from(
+        PHOTO_BUCKET_NAME
+      )
+      .remove([
+        path
+      ]);
+
+
+  if (
+    error
+  ) {
+
+    console.error(
+      `写真クラウド削除エラー (${dateKey}):`,
+      error
+    );
+
+    return false;
+
+  }
+
+
+  cloudPhotoDates.delete(
+    dateKey
+  );
+
+  knownCloudPhotoDates.delete(
+    dateKey
+  );
+
+  pendingPhotoUploadDates.delete(
+    dateKey
+  );
+
+
+  savePhotoDateSet(
+    PHOTO_CLOUD_INDEX_KEY,
+    knownCloudPhotoDates
+  );
+
+  savePhotoDateSet(
+    PHOTO_PENDING_UPLOAD_KEY,
+    pendingPhotoUploadDates
+  );
+
+
+  cloudPhotoDownloadedDates.delete(
+    dateKey
+  );
+
+
+  console.log(
+    `写真をSupabaseから削除: ${dateKey}`
+  );
+
+
+  return true;
+
+}
+
+
+// --------------------------------
+// クラウドの写真一覧
+// --------------------------------
+
+async function loadCloudPhotoIndex() {
+
+  photoSyncReady =
+    false;
+
+
+  const user =
+    await getLoggedInUser();
+
+
+  if (
+    !user
+  ) {
+
+    return false;
+
+  }
+
+
+  const dates =
+    new Set();
+
+  const limit =
+    100;
+
+  let offset =
+    0;
+
+
+  while (
+    true
+  ) {
+
+    const {
+      data,
+      error
+    } =
+      await supabaseClient
+        .storage
+        .from(
+          PHOTO_BUCKET_NAME
+        )
+        .list(
+          user.id,
+          {
+            limit,
+            offset,
+
+            sortBy: {
+              column:
+                "name",
+
+              order:
+                "asc"
+            }
+          }
+        );
+
+
+    if (
+      error
+    ) {
+
+      console.error(
+        "写真一覧の取得に失敗しました:",
+        error
+      );
+
+      return false;
+
+    }
+
+
+    const files =
+      data ||
+      [];
+
+
+    files.forEach(
+      file => {
+
+        const match =
+          String(
+            file.name ||
+            ""
+          ).match(
+            /^(\d{4}-\d{2}-\d{2})\.jpg$/
+          );
+
+
+        if (
+          match
+        ) {
+
+          dates.add(
+            match[1]
+          );
+
+        }
+
+      }
+    );
+
+
+    if (
+      files.length <
+      limit
+    ) {
+
+      break;
+
+    }
+
+
+    offset +=
+      limit;
+
+  }
+
+
+  // 他端末で削除された写真を
+  // この端末のキャッシュからも削除
+  const remotelyDeletedDates =
+    [
+      ...knownCloudPhotoDates
+    ]
+      .filter(
+        dateKey =>
+          !dates.has(
+            dateKey
+          ) &&
+          !pendingPhotoUploadDates.has(
+            dateKey
+          )
+      );
+
+
+  for (
+    const dateKey of
+    remotelyDeletedDates
+  ) {
+
+    await deleteLocalPhoto(
+      dateKey
+    );
+
+  }
+
+
+  cloudPhotoDates =
+    dates;
+
+
+  knownCloudPhotoDates =
+    new Set(
+      dates
+    );
+
+
+  savePhotoDateSet(
+    PHOTO_CLOUD_INDEX_KEY,
+    knownCloudPhotoDates
+  );
+
+
+  cloudPhotoDownloadedDates.clear();
+
+
+  photoSyncReady =
+    true;
+
+
+  console.log(
+    `Supabaseの写真: ${cloudPhotoDates.size}枚`
+  );
+
+
+  return true;
+
+}
+
+
+// --------------------------------
+// Androidなどに残っている未同期写真
+// --------------------------------
+
+async function updateCloudMigrationButtonForPhotos() {
+
+  const button =
+    document.getElementById(
+      "cloudMigrationButton"
+    );
+
+
+  if (
+    !button ||
+    !photoSyncReady
+  ) {
+
+    return;
+
+  }
+
+
+  const photos =
+    await getAllDailyPhotos();
+
+
+  const pendingPhotos =
+    photos.filter(
+      photo =>
+        /^\d{4}-\d{2}-\d{2}$/.test(
+          String(
+            photo.date ||
+            ""
+          )
+        ) &&
+        photo.image &&
+        !cloudPhotoDates.has(
+          photo.date
+        )
+    );
+
+
+  if (
+    pendingPhotos.length >
+    0
+  ) {
+
+    button.disabled =
+      false;
+
+    button.dataset.mode =
+      "photos";
+
+    button.textContent =
+      `未同期の写真をクラウドへ移行 (${pendingPhotos.length}枚)`;
+
+    return;
+
+  }
+
+
+  button.disabled =
+    true;
+
+  button.dataset.mode =
+    "done";
+
+  button.textContent =
+    "クラウド同期済み";
+
+    
+
+}
+
+
+// --------------------------------
+// 既存ローカル写真を一括移行
+// --------------------------------
+
+async function migrateLocalPhotosToCloud() {
+
+  if (
+    !photoSyncReady
+  ) {
+
+    const loaded =
+      await loadCloudPhotoIndex();
+
+
+    if (
+      !loaded
+    ) {
+
+      alert(
+        "クラウドの写真情報を取得できませんでした。"
+      );
+
+      return;
+
+    }
+
+  }
+
+
+  const photos =
+    await getAllDailyPhotos();
+
+
+  const pendingPhotos =
+    photos.filter(
+      photo =>
+        /^\d{4}-\d{2}-\d{2}$/.test(
+          String(
+            photo.date ||
+            ""
+          )
+        ) &&
+        photo.image &&
+        !cloudPhotoDates.has(
+          photo.date
+        )
+    );
+
+
+  if (
+    pendingPhotos.length ===
+    0
+  ) {
+
+    alert(
+      "クラウドへ移行する写真はありません。"
+    );
+
+    await updateCloudMigrationButtonForPhotos();
+
+    return;
+
+  }
+
+
+  const confirmed =
+    confirm(
+      `${pendingPhotos.length}枚の写真をクラウドへ移行します。\n\n` +
+      "既にクラウドにある写真は上書きしません。"
+    );
+
+
+  if (
+    !confirmed
+  ) {
+
+    return;
+
+  }
+
+
+  const button =
+    document.getElementById(
+      "cloudMigrationButton"
+    );
+
+
+  if (
+    button
+  ) {
+
+    button.disabled =
+      true;
+
+    button.textContent =
+      "写真を移行中...";
+
+  }
+
+
+  let successCount =
+    0;
+
+
+  for (
+    const photo of
+    pendingPhotos
+  ) {
+
+    const success =
+      await uploadPhotoToCloud(
+        photo.date,
+        photo.image
+      );
+
+
+    if (
+      success
+    ) {
+
+      successCount +=
+        1;
+
+    }
+
+  }
+
+
+  await loadCloudPhotoIndex();
+
+  await updateCloudMigrationButtonForPhotos();
+
+
+  if (
+    successCount ===
+    pendingPhotos.length
+  ) {
+
+    alert(
+      `${successCount}枚の写真をクラウドへ移行しました。`
+    );
+
+    return;
+
+  }
+
+
+  alert(
+    `${successCount}/${pendingPhotos.length}枚の写真を移行しました。\n\n失敗した写真は端末内に残っています。`
+  );
+
+}
+
+
+// --------------------------------
+// 写真クラウド初期化
+// --------------------------------
+
+async function initializeCloudPhotos() {
+
+  const loaded =
+    await loadCloudPhotoIndex();
+
+
+  if (
+    !loaded
+  ) {
+
+    return false;
+
+  }
+
+
+  await updateCloudMigrationButtonForPhotos();
+
+  await renderDailyPhoto();
+
+
+  return true;
+
+}
+
+
 // --------------------------------
 // 今日の写真
 // --------------------------------
@@ -6441,16 +7413,47 @@ if (
             "KB"
           );
 
+          const dateKey =
+            selectedDateKey;
+
           const compressedImage =
             await compressImage(
               file
             );
 
+          // まず端末に保存
           await saveDailyPhoto(
-            compressedImage
+            compressedImage,
+            dateKey
           );
 
-          await renderDailyPhoto();
+          // 次にSupabaseへ保存
+          const uploaded =
+            await uploadPhotoToCloud(
+              dateKey,
+              compressedImage
+            );
+
+          await updateCloudMigrationButtonForPhotos();
+
+          if (
+            selectedDateKey ===
+            dateKey
+          ) {
+
+            await renderDailyPhoto();
+
+          }
+
+          if (
+            !uploaded
+          ) {
+
+            alert(
+              "写真はこの端末には保存しましたが、クラウド同期に失敗しました。"
+            );
+
+          }
 
         } catch (error) {
 
@@ -6640,7 +7643,7 @@ async function loginWithEmail() {
     data.user
   );
 
-  await loadCloudDataToLocal();
+  await initializeCloudForUser();
 
 }
 
@@ -6710,16 +7713,19 @@ async function signupWithEmail() {
   }
 
 
+
   if (
     data.session
   ) {
 
     authMessage.textContent =
-      "";
+    "";
 
     setAuthView(
       data.user
     );
+
+    await initializeCloudForUser();
 
     return;
 
@@ -6976,6 +7982,26 @@ async function loadCloudDataToLocal() {
 }
 
 // --------------------------------
+// ログイン後のクラウド初期化
+// --------------------------------
+
+async function initializeCloudForUser() {
+
+  const dataLoaded =
+    await loadCloudDataToLocal();
+
+  const photosLoaded =
+    await initializeCloudPhotos();
+
+
+  return (
+    dataLoaded ||
+    photosLoaded
+  );
+
+}
+
+// --------------------------------
 // 現在のログイン状態
 // --------------------------------
 
@@ -6998,11 +8024,12 @@ async function initializeAuth() {
   );
 
 
+ 
   if (
     user
   ) {
 
-    await loadCloudDataToLocal();
+    await initializeCloudForUser();
 
   }
 
@@ -7278,6 +8305,8 @@ async function migrateLocalDataToCloud() {
 
     }
 
+    await initializeCloudPhotos();
+
   } catch (
     error
   ) {
@@ -7324,7 +8353,19 @@ const cloudMigrationButton =
 cloudMigrationButton
   ?.addEventListener(
     "click",
-    () => {
+    async () => {
+
+      if (
+        cloudMigrationButton.dataset.mode ===
+        "photos"
+      ) {
+
+        await migrateLocalPhotosToCloud();
+
+        return;
+
+      }
+
 
       migrateLocalDataToCloud();
 
