@@ -7109,6 +7109,36 @@ function getLocalMigrationDateKeys() {
 async function cloudHasLifeLogData() {
 
   const {
+    data: sessionData,
+    error: sessionError
+  } =
+    await supabaseClient.auth
+      .getSession();
+
+
+  if (
+    sessionError
+  ) {
+
+    throw sessionError;
+
+  }
+
+
+  const user =
+    sessionData.session?.user;
+
+
+  if (
+    !user
+  ) {
+
+    return false;
+
+  }
+
+
+  const {
     data,
     error
   } =
@@ -7118,6 +7148,10 @@ async function cloudHasLifeLogData() {
       )
       .select(
         "date"
+      )
+      .eq(
+        "user_id",
+        user.id
       )
       .limit(
         1
@@ -8265,23 +8299,29 @@ async function loadCloudDataToLocal() {
   }
 
 
+  
   const {
     data: rows,
     error
   } =
-    await supabaseClient
-      .from(
-        "lifelog_days"
-      )
-      .select(
-        "date, schedules, results"
-      )
-      .order(
-        "date",
-        {
-          ascending: true
-        }
-      );
+  await supabaseClient
+  .from(
+    "lifelog_days"
+  )
+  .select(
+    "date, schedules, results"
+  )
+
+  .eq(
+    "user_id",
+    user.id
+  )
+  .order(
+    "date",
+    {
+      ascending: true
+    }
+  );
 
 
   if (
@@ -8399,23 +8439,7 @@ async function loadCloudDataToLocal() {
     Date.now();
 
 
-  const migrationButton =
-    document.getElementById(
-      "cloudMigrationButton"
-    );
-
-
-  if (
-    migrationButton
-  ) {
-
-    migrationButton.disabled =
-      true;
-
-    migrationButton.textContent =
-      "クラウド移行済み";
-
-  }
+  
 
 
   console.log(
@@ -8481,308 +8505,6 @@ async function initializeAuth() {
 
 }
 
-// --------------------------------
-// ローカルデータをSupabaseへ初回移行
-// --------------------------------
-
-async function migrateLocalDataToCloud() {
-
-  const {
-    data: sessionData,
-    error: sessionError
-  } =
-    await supabaseClient.auth
-      .getSession();
-
-
-  if (
-    sessionError
-  ) {
-
-    console.error(
-      sessionError
-    );
-
-    alert(
-      "ログイン状態を確認できませんでした。"
-    );
-
-    return;
-
-  }
-
-
-  const user =
-    sessionData.session?.user;
-
-
-  if (
-    !user
-  ) {
-
-    alert(
-      "先にLifeLogへログインしてください。"
-    );
-
-    return;
-
-  }
-
-
-  // --------------------------------
-  // すでにクラウドデータがあるか確認
-  // --------------------------------
-
-  const {
-    data: existingRows,
-    error: checkError
-  } =
-    await supabaseClient
-      .from(
-        "lifelog_days"
-      )
-      .select(
-        "date"
-      )
-      .limit(
-        1
-      );
-
-
-  if (
-    checkError
-  ) {
-
-    console.error(
-      checkError
-    );
-
-    alert(
-      "クラウドデータを確認できませんでした。"
-    );
-
-    return;
-
-  }
-
-
-  if (
-    existingRows &&
-    existingRows.length > 0
-  ) {
-
-    alert(
-      "クラウドにはすでにLifeLogデータがあります。\n\n安全のため、この端末からの初回移行は実行しませんでした。"
-    );
-
-    return;
-
-  }
-
-
-  // --------------------------------
-  // ローカルに存在する日付を全部取得
-  // --------------------------------
-
-  const dateKeys =
-    [
-      ...new Set([
-        ...Object.keys(
-          allData
-        ),
-
-        ...Object.keys(
-          allResultData
-        )
-      ])
-    ]
-      .filter(
-        date =>
-          /^\d{4}-\d{2}-\d{2}$/.test(
-            date
-          )
-      )
-      .sort();
-
-
-  if (
-    dateKeys.length === 0
-  ) {
-
-    alert(
-      "この端末には移行するLifeLogデータがありません。"
-    );
-
-    return;
-
-  }
-
-
-  const confirmed =
-    confirm(
-      `この端末に保存されている ${dateKeys.length}日分のLifeLogデータをクラウドへ移行します。\n\n` +
-      "普段使っているAndroid端末で実行していますか？\n\n" +
-      "この操作は初回のみ行ってください。"
-    );
-
-
-  if (
-    !confirmed
-  ) {
-
-    return;
-
-  }
-
-
-  // --------------------------------
-  // Supabaseへ送るデータを作成
-  // --------------------------------
-
-  const rows =
-    dateKeys.map(
-      date => ({
-
-        user_id:
-          user.id,
-
-        date:
-          date,
-
-        schedules:
-          Array.isArray(
-            allData[
-              date
-            ]
-          )
-            ? allData[
-                date
-              ]
-            : [],
-
-        results:
-          (
-            allResultData[
-              date
-            ] &&
-            typeof allResultData[
-              date
-            ] ===
-              "object"
-          )
-            ? allResultData[
-                date
-              ]
-            : {},
-
-        updated_at:
-          new Date()
-            .toISOString()
-
-      })
-    );
-
-
-  const button =
-    document.getElementById(
-      "cloudMigrationButton"
-    );
-
-
-  if (
-    button
-  ) {
-
-    button.disabled =
-      true;
-
-    button.textContent =
-      "クラウドへ移行中...";
-
-  }
-
-
-  try {
-
-    const {
-      error
-    } =
-      await supabaseClient
-        .from(
-          "lifelog_days"
-        )
-        .upsert(
-          rows,
-          {
-            onConflict:
-              "user_id,date"
-          }
-        );
-
-
-    if (
-      error
-    ) {
-
-      throw error;
-
-    }
-
-
-    alert(
-      `${dateKeys.length}日分のLifeLogデータをクラウドへ移行しました。\n\nAndroidのローカルデータはそのまま残っています。`
-    );
-
-    
-    cloudSyncReady =
-  
-    true;
-
-    lastCloudPullAt =
-    Date.now();
-
-
-    if (
-      button
-    ) {
-
-      button.textContent =
-        "クラウド移行済み";
-
-    }
-
-    await initializeCloudPhotos();
-
-  } catch (
-    error
-  ) {
-
-    console.error(
-      "クラウド移行エラー:",
-      error
-    );
-
-
-    alert(
-      "クラウドへの移行に失敗しました。\n\nローカルデータは変更されていません。"
-    );
-
-
-    if (
-      button
-    ) {
-
-      button.disabled =
-        false;
-
-      button.textContent =
-        "この端末のデータをクラウドへ移行";
-
-    }
-
-  }
-
-}
 
 
 
