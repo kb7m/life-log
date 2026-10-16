@@ -7078,11 +7078,94 @@ async function loadCloudPhotoIndex() {
 
 }
 
+// --------------------------------
+// 初回移行状態を取得
+// --------------------------------
+
+function getLocalMigrationDateKeys() {
+
+  return [
+    ...new Set([
+      ...Object.keys(
+        allData
+      ),
+
+      ...Object.keys(
+        allResultData
+      )
+    ])
+  ]
+    .filter(
+      date =>
+        /^\d{4}-\d{2}-\d{2}$/.test(
+          date
+        )
+    )
+    .sort();
+
+}
+
+
+async function cloudHasLifeLogData() {
+
+  const {
+    data,
+    error
+  } =
+    await supabaseClient
+      .from(
+        "lifelog_days"
+      )
+      .select(
+        "date"
+      )
+      .limit(
+        1
+      );
+
+
+  if (
+    error
+  ) {
+
+    throw error;
+
+  }
+
+
+  return Boolean(
+    data &&
+    data.length > 0
+  );
+
+}
+
+
+async function getPendingLocalPhotos() {
+
+  const photos =
+    await getAllDailyPhotos();
+
+
+  return photos.filter(
+    photo =>
+      /^\d{4}-\d{2}-\d{2}$/.test(
+        String(
+          photo.date ||
+          ""
+        )
+      ) &&
+      photo.image &&
+      !cloudPhotoDates.has(
+        photo.date
+      )
+  );
+
+}
 
 // --------------------------------
 // Androidなどに残っている未同期写真
 // --------------------------------
-
 async function updateCloudMigrationButtonForPhotos() {
 
   const button =
@@ -7101,58 +7184,102 @@ async function updateCloudMigrationButtonForPhotos() {
   }
 
 
-  const photos =
-    await getAllDailyPhotos();
+  try {
+
+    const hasCloudData =
+      await cloudHasLifeLogData();
 
 
-  const pendingPhotos =
-    photos.filter(
-      photo =>
-        /^\d{4}-\d{2}-\d{2}$/.test(
-          String(
-            photo.date ||
-            ""
-          )
-        ) &&
-        photo.image &&
-        !cloudPhotoDates.has(
-          photo.date
-        )
-    );
+    const pendingPhotos =
+      await getPendingLocalPhotos();
 
 
-  if (
-    pendingPhotos.length >
-    0
-  ) {
+    // ------------------------------
+    // LifeLog本体がまだクラウドにない
+    // → 記録＋写真をまとめて初回移行
+    // ------------------------------
+
+    if (
+      !hasCloudData
+    ) {
+
+      button.disabled =
+        false;
+
+      button.dataset.mode =
+        "all";
+
+
+      if (
+        pendingPhotos.length >
+        0
+      ) {
+
+        button.textContent =
+          `この端末のデータをクラウドへ移行（写真${pendingPhotos.length}枚を含む）`;
+
+      } else {
+
+        button.textContent =
+          "この端末のデータをクラウドへ移行";
+
+      }
+
+
+      return;
+
+    }
+
+
+    // ------------------------------
+    // LifeLog本体はクラウド済み
+    // 写真だけ未移行
+    // ------------------------------
+
+    if (
+      pendingPhotos.length >
+      0
+    ) {
+
+      button.disabled =
+        false;
+
+      button.dataset.mode =
+        "photos";
+
+      button.textContent =
+        `未同期の写真をクラウドへ移行 (${pendingPhotos.length}枚)`;
+
+      return;
+
+    }
+
+
+    // ------------------------------
+    // 全部同期済み
+    // ------------------------------
 
     button.disabled =
-      false;
+      true;
 
     button.dataset.mode =
-      "photos";
+      "done";
 
     button.textContent =
-      `未同期の写真をクラウドへ移行 (${pendingPhotos.length}枚)`;
+      "クラウド同期済み";
 
-    return;
+  } catch (
+    error
+  ) {
+
+    console.error(
+      "クラウド移行状態の確認に失敗しました:",
+      error
+    );
 
   }
 
-
-  button.disabled =
-    true;
-
-  button.dataset.mode =
-    "done";
-
-  button.textContent =
-    "クラウド同期済み";
-
-    
-
 }
-
 
 // --------------------------------
 // 既存ローカル写真を一括移行
@@ -7307,6 +7434,325 @@ async function migrateLocalPhotosToCloud() {
 
 }
 
+// --------------------------------
+// LifeLog本体＋写真を一括初回移行
+// --------------------------------
+
+async function migrateAllLocalDataToCloud() {
+
+  const {
+    data: sessionData,
+    error: sessionError
+  } =
+    await supabaseClient.auth
+      .getSession();
+
+
+  if (
+    sessionError
+  ) {
+
+    console.error(
+      sessionError
+    );
+
+    alert(
+      "ログイン状態を確認できませんでした。"
+    );
+
+    return;
+
+  }
+
+
+  const user =
+    sessionData.session?.user;
+
+
+  if (
+    !user
+  ) {
+
+    alert(
+      "先にLifeLogへログインしてください。"
+    );
+
+    return;
+
+  }
+
+
+  // ------------------------------
+  // すでに記録がある場合は上書きしない
+  // ------------------------------
+
+  let hasCloudData;
+
+
+  try {
+
+    hasCloudData =
+      await cloudHasLifeLogData();
+
+  } catch (
+    error
+  ) {
+
+    console.error(
+      error
+    );
+
+    alert(
+      "クラウドデータを確認できませんでした。"
+    );
+
+    return;
+
+  }
+
+
+  if (
+    hasCloudData
+  ) {
+
+    alert(
+      "クラウドにはすでにLifeLogの記録があります。\n\n安全のため、過去記録は上書きしません。未同期の写真だけ確認します。"
+    );
+
+    await migrateLocalPhotosToCloud();
+
+    return;
+
+  }
+
+
+  const dateKeys =
+    getLocalMigrationDateKeys();
+
+
+  const pendingPhotos =
+    await getPendingLocalPhotos();
+
+
+  if (
+    dateKeys.length === 0 &&
+    pendingPhotos.length === 0
+  ) {
+
+    alert(
+      "この端末には移行するデータがありません。"
+    );
+
+    return;
+
+  }
+
+
+  const confirmed =
+    confirm(
+      `この端末のLifeLogデータをクラウドへ移行します。\n\n` +
+      `記録: ${dateKeys.length}日分\n` +
+      `写真: ${pendingPhotos.length}枚\n\n` +
+      "この操作は普段使っていた端末で初回のみ実行してください。"
+    );
+
+
+  if (
+    !confirmed
+  ) {
+
+    return;
+
+  }
+
+
+  const button =
+    document.getElementById(
+      "cloudMigrationButton"
+    );
+
+
+  if (
+    button
+  ) {
+
+    button.disabled =
+      true;
+
+    button.textContent =
+      "クラウドへ移行中...";
+
+  }
+
+
+  try {
+
+    // ------------------------------
+    // 予定・実績・支出・一言
+    // ------------------------------
+
+    if (
+      dateKeys.length >
+      0
+    ) {
+
+      const rows =
+        dateKeys.map(
+          date => ({
+
+            user_id:
+              user.id,
+
+            date:
+              date,
+
+            schedules:
+              Array.isArray(
+                allData[
+                  date
+                ]
+              )
+                ? allData[
+                    date
+                  ]
+                : [],
+
+            results:
+              (
+                allResultData[
+                  date
+                ] &&
+                typeof allResultData[
+                  date
+                ] ===
+                  "object"
+              )
+                ? allResultData[
+                    date
+                  ]
+                : {},
+
+            updated_at:
+              new Date()
+                .toISOString()
+
+          })
+        );
+
+
+      const {
+        error
+      } =
+        await supabaseClient
+          .from(
+            "lifelog_days"
+          )
+          .upsert(
+            rows,
+            {
+              onConflict:
+                "user_id,date"
+            }
+          );
+
+
+      if (
+        error
+      ) {
+
+        throw error;
+
+      }
+
+    }
+
+
+    // ------------------------------
+    // 写真
+    // ------------------------------
+
+    let photoSuccessCount =
+      0;
+
+
+    for (
+      const photo of
+      pendingPhotos
+    ) {
+
+      const success =
+        await uploadPhotoToCloud(
+          photo.date,
+          photo.image
+        );
+
+
+      if (
+        success
+      ) {
+
+        photoSuccessCount +=
+          1;
+
+      }
+
+    }
+
+
+    cloudSyncReady =
+      true;
+
+    lastCloudPullAt =
+      Date.now();
+
+
+    await loadCloudPhotoIndex();
+
+    await updateCloudMigrationButtonForPhotos();
+
+
+    if (
+      photoSuccessCount ===
+      pendingPhotos.length
+    ) {
+
+      alert(
+        `クラウド移行が完了しました。\n\n` +
+        `記録: ${dateKeys.length}日分\n` +
+        `写真: ${photoSuccessCount}枚`
+      );
+
+    } else {
+
+      alert(
+        `記録はクラウドへ移行しました。\n\n` +
+        `記録: ${dateKeys.length}日分\n` +
+        `写真: ${photoSuccessCount}/${pendingPhotos.length}枚\n\n` +
+        "失敗した写真は端末内に残っています。"
+      );
+
+    }
+
+  } catch (
+    error
+  ) {
+
+    console.error(
+      "一括クラウド移行エラー:",
+      error
+    );
+
+
+    alert(
+      "クラウドへの移行に失敗しました。\n\n端末内の元データは削除されていません。"
+    );
+
+
+    await updateCloudMigrationButtonForPhotos();
+
+  }
+
+}
 
 // --------------------------------
 // 写真クラウド初期化
@@ -8355,8 +8801,24 @@ cloudMigrationButton
     "click",
     async () => {
 
+      const mode =
+        cloudMigrationButton.dataset.mode;
+
+
       if (
-        cloudMigrationButton.dataset.mode ===
+        mode ===
+        "all"
+      ) {
+
+        await migrateAllLocalDataToCloud();
+
+        return;
+
+      }
+
+
+      if (
+        mode ===
         "photos"
       ) {
 
@@ -8365,9 +8827,6 @@ cloudMigrationButton
         return;
 
       }
-
-
-      migrateLocalDataToCloud();
 
     }
   );

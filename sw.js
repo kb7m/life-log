@@ -1,4 +1,4 @@
-const CACHE_NAME = "lifelog-v14";
+const CACHE_NAME = "lifelog-v15";
 
 const APP_FILES = [
   "./",
