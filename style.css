@@ -3038,3 +3038,210 @@ body.schedule-reordering {
 
   font-size: 18px;
 }
+
+/* ================================
+   Auth
+================================ */
+
+.auth-screen {
+  min-height: 100vh;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 24px;
+}
+
+
+.auth-card {
+  width: min(
+    100%,
+    390px
+  );
+
+  padding: 30px;
+
+  background: #191c22;
+
+  border:
+    1px solid
+    #292e37;
+
+  border-radius: 20px;
+}
+
+
+.auth-logo {
+  margin-bottom: 28px;
+
+  color: #ffffff;
+
+  font-size: 27px;
+  font-weight: 750;
+
+  letter-spacing: -0.8px;
+}
+
+
+.auth-card h2 {
+  margin:
+    0
+    0
+    6px;
+
+  color: #ffffff;
+
+  font-size: 22px;
+}
+
+
+.auth-description {
+  margin:
+    0
+    0
+    24px;
+
+  color: #7c8490;
+
+  font-size: 13px;
+}
+
+
+.auth-input {
+  width: 100%;
+  height: 46px;
+
+  margin-bottom: 10px;
+
+  padding:
+    0
+    14px;
+
+  border:
+    1px solid
+    #303641;
+
+  border-radius: 10px;
+
+  outline: none;
+
+  background: #20242c;
+
+  color: #ffffff;
+
+  font-size: 14px;
+}
+
+
+.auth-input:focus {
+  border-color: #747dff;
+}
+
+
+.auth-message {
+  min-height: 18px;
+
+  margin:
+    5px
+    0
+    12px;
+
+  color: #d97b83;
+
+  font-size: 12px;
+}
+
+
+.auth-primary-button,
+.auth-secondary-button {
+  width: 100%;
+  height: 44px;
+
+  border: none;
+  border-radius: 10px;
+
+  cursor: pointer;
+
+  font-size: 14px;
+  font-weight: 600;
+}
+
+
+.auth-primary-button {
+  background: #ffffff;
+
+  color: #111318;
+}
+
+
+.auth-secondary-button {
+  margin-top: 8px;
+
+  background: transparent;
+
+  color: #9ba2ae;
+
+  border:
+    1px solid
+    #303641;
+}
+
+/* hidden を確実に非表示にする */
+.app[hidden],
+.bottom-tabs[hidden],
+.auth-screen[hidden] {
+  display: none !important;
+}
+
+/* ================================
+   Cloud migration
+================================ */
+
+.cloud-migration-button {
+  width: 100%;
+
+  margin-top: 12px;
+  padding: 12px;
+
+  border:
+    1px solid
+    #303641;
+
+  border-radius: 10px;
+
+  background: #232730;
+
+  color: #d8dce3;
+
+  font-size: 14px;
+  font-weight: 600;
+
+  cursor: pointer;
+}
+
+
+.cloud-migration-button:hover {
+  background: #2c313c;
+  color: #ffffff;
+}
+
+
+.cloud-migration-button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+
+.cloud-migration-description {
+  margin:
+    8px
+    0
+    0;
+
+  color: #717784;
+
+  font-size: 11px;
+
+  line-height: 1.6;
+}

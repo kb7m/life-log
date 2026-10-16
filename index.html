@@ -38,8 +38,78 @@
 
 <body>
 
+  <!-- ================================
+     ログイン
+================================= -->
 
-  <main class="app">
+<section
+  id="authScreen"
+  class="auth-screen"
+>
+
+  <div class="auth-card">
+
+    <div class="auth-logo">
+      LifeLog
+    </div>
+
+    <h2>
+      おかえり
+    </h2>
+
+    <p class="auth-description">
+      LifeLogにログイン
+    </p>
+
+    <input
+      id="authEmail"
+      class="auth-input"
+      type="email"
+      placeholder="メールアドレス"
+      autocomplete="email"
+    >
+
+    <input
+      id="authPassword"
+      class="auth-input"
+      type="password"
+      placeholder="パスワード"
+      autocomplete="current-password"
+    >
+
+    <p
+      id="authMessage"
+      class="auth-message"
+    ></p>
+
+    <button
+      id="loginButton"
+      class="auth-primary-button"
+      type="button"
+    >
+      ログイン
+    </button>
+
+    <button
+      id="signupButton"
+      class="auth-secondary-button"
+      type="button"
+    >
+      アカウントを作成
+    </button>
+
+  </div>
+
+</section>
+
+
+  <main
+    id="appRoot"
+    class="app"
+    hidden
+    >
+
+  
 
 
     <!-- ================================
@@ -746,6 +816,28 @@
             復元
           </button>
 
+          
+          <button
+  
+          id="cloudMigrationButton"
+  
+          class="cloud-migration-button"
+  
+          type="button"
+
+          >
+
+          この端末のデータをクラウドへ移行
+
+        </button>
+
+
+        <p class="cloud-migration-description">
+
+          初回のみ使用します。普段使っている端末で実行してください。
+
+        </p>
+
 
         </div>
 
@@ -774,7 +866,11 @@
        下部タブ
   ================================= -->
 
-  <nav class="bottom-tabs">
+  <nav 
+  id="bottomTabs"
+  class="bottom-tabs"
+  hidden
+  >
 
 
     <button
@@ -803,6 +899,11 @@
   <!-- ================================
        LifeLog本体
   ================================= -->
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <script src="supabase-config.js"></script>
+
 
   <script src="script.js"></script>
 

@@ -6035,6 +6035,642 @@ if (
 }
 
 // --------------------------------
+// Supabase Auth
+// --------------------------------
+
+const authScreen =
+  document.getElementById(
+    "authScreen"
+  );
+
+const appRoot =
+  document.getElementById(
+    "appRoot"
+  );
+
+const bottomTabs =
+  document.getElementById(
+    "bottomTabs"
+  );
+
+const authEmail =
+  document.getElementById(
+    "authEmail"
+  );
+
+const authPassword =
+  document.getElementById(
+    "authPassword"
+  );
+
+const authMessage =
+  document.getElementById(
+    "authMessage"
+  );
+
+const loginButton =
+  document.getElementById(
+    "loginButton"
+  );
+
+const signupButton =
+  document.getElementById(
+    "signupButton"
+  );
+
+
+// --------------------------------
+// ログイン状態で画面切り替え
+// --------------------------------
+
+function setAuthView(
+  user
+) {
+
+  const loggedIn =
+    Boolean(
+      user
+    );
+
+
+  if (
+    authScreen
+  ) {
+
+    authScreen.hidden =
+      loggedIn;
+
+  }
+
+
+  if (
+    appRoot
+  ) {
+
+    appRoot.hidden =
+      !loggedIn;
+
+  }
+
+
+  if (
+    bottomTabs
+  ) {
+
+    bottomTabs.hidden =
+      !loggedIn;
+
+  }
+
+}
+
+
+// --------------------------------
+// ログイン
+// --------------------------------
+
+async function loginWithEmail() {
+
+  const email =
+    authEmail?.value.trim();
+
+  const password =
+    authPassword?.value;
+
+
+  if (
+    !email ||
+    !password
+  ) {
+
+    authMessage.textContent =
+      "メールアドレスとパスワードを入力してください";
+
+    return;
+
+  }
+
+
+  authMessage.textContent =
+    "ログイン中...";
+
+
+  const {
+    data,
+    error
+  } =
+    await supabaseClient.auth
+      .signInWithPassword({
+        email,
+        password
+      });
+
+
+  if (
+    error
+  ) {
+
+    authMessage.textContent =
+      error.message;
+
+    return;
+
+  }
+
+
+  authMessage.textContent =
+    "";
+
+
+  setAuthView(
+    data.user
+  );
+
+}
+
+
+// --------------------------------
+// アカウント作成
+// --------------------------------
+
+async function signupWithEmail() {
+
+  const email =
+    authEmail?.value.trim();
+
+  const password =
+    authPassword?.value;
+
+
+  if (
+    !email ||
+    !password
+  ) {
+
+    authMessage.textContent =
+      "メールアドレスとパスワードを入力してください";
+
+    return;
+
+  }
+
+
+  if (
+    password.length < 6
+  ) {
+
+    authMessage.textContent =
+      "パスワードは6文字以上にしてください";
+
+    return;
+
+  }
+
+
+  authMessage.textContent =
+    "アカウントを作成しています...";
+
+
+  const {
+    data,
+    error
+  } =
+    await supabaseClient.auth
+      .signUp({
+        email,
+        password
+      });
+
+
+  if (
+    error
+  ) {
+
+    authMessage.textContent =
+      error.message;
+
+    return;
+
+  }
+
+
+  if (
+    data.session
+  ) {
+
+    authMessage.textContent =
+      "";
+
+    setAuthView(
+      data.user
+    );
+
+    return;
+
+  }
+
+
+  authMessage.textContent =
+    "確認メールを送信しました。メールを確認してください。";
+
+}
+
+
+// --------------------------------
+// Authボタン
+// --------------------------------
+
+loginButton?.addEventListener(
+  "click",
+  loginWithEmail
+);
+
+
+signupButton?.addEventListener(
+  "click",
+  signupWithEmail
+);
+
+
+// --------------------------------
+// Enterでログイン
+// --------------------------------
+
+authPassword?.addEventListener(
+  "keydown",
+  event => {
+
+    if (
+      event.key ===
+      "Enter"
+    ) {
+
+      loginWithEmail();
+
+    }
+
+  }
+);
+
+
+// --------------------------------
+// 現在のログイン状態
+// --------------------------------
+
+async function initializeAuth() {
+
+  const {
+    data
+  } =
+    await supabaseClient.auth
+      .getSession();
+
+
+  setAuthView(
+    data.session?.user ||
+    null
+  );
+
+}
+
+// --------------------------------
+// ローカルデータをSupabaseへ初回移行
+// --------------------------------
+
+async function migrateLocalDataToCloud() {
+
+  const {
+    data: sessionData,
+    error: sessionError
+  } =
+    await supabaseClient.auth
+      .getSession();
+
+
+  if (
+    sessionError
+  ) {
+
+    console.error(
+      sessionError
+    );
+
+    alert(
+      "ログイン状態を確認できませんでした。"
+    );
+
+    return;
+
+  }
+
+
+  const user =
+    sessionData.session?.user;
+
+
+  if (
+    !user
+  ) {
+
+    alert(
+      "先にLifeLogへログインしてください。"
+    );
+
+    return;
+
+  }
+
+
+  // --------------------------------
+  // すでにクラウドデータがあるか確認
+  // --------------------------------
+
+  const {
+    data: existingRows,
+    error: checkError
+  } =
+    await supabaseClient
+      .from(
+        "lifelog_days"
+      )
+      .select(
+        "date"
+      )
+      .limit(
+        1
+      );
+
+
+  if (
+    checkError
+  ) {
+
+    console.error(
+      checkError
+    );
+
+    alert(
+      "クラウドデータを確認できませんでした。"
+    );
+
+    return;
+
+  }
+
+
+  if (
+    existingRows &&
+    existingRows.length > 0
+  ) {
+
+    alert(
+      "クラウドにはすでにLifeLogデータがあります。\n\n安全のため、この端末からの初回移行は実行しませんでした。"
+    );
+
+    return;
+
+  }
+
+
+  // --------------------------------
+  // ローカルに存在する日付を全部取得
+  // --------------------------------
+
+  const dateKeys =
+    [
+      ...new Set([
+        ...Object.keys(
+          allData
+        ),
+
+        ...Object.keys(
+          allResultData
+        )
+      ])
+    ]
+      .filter(
+        date =>
+          /^\d{4}-\d{2}-\d{2}$/.test(
+            date
+          )
+      )
+      .sort();
+
+
+  if (
+    dateKeys.length === 0
+  ) {
+
+    alert(
+      "この端末には移行するLifeLogデータがありません。"
+    );
+
+    return;
+
+  }
+
+
+  const confirmed =
+    confirm(
+      `この端末に保存されている ${dateKeys.length}日分のLifeLogデータをクラウドへ移行します。\n\n` +
+      "普段使っているAndroid端末で実行していますか？\n\n" +
+      "この操作は初回のみ行ってください。"
+    );
+
+
+  if (
+    !confirmed
+  ) {
+
+    return;
+
+  }
+
+
+  // --------------------------------
+  // Supabaseへ送るデータを作成
+  // --------------------------------
+
+  const rows =
+    dateKeys.map(
+      date => ({
+
+        user_id:
+          user.id,
+
+        date:
+          date,
+
+        schedules:
+          Array.isArray(
+            allData[
+              date
+            ]
+          )
+            ? allData[
+                date
+              ]
+            : [],
+
+        results:
+          (
+            allResultData[
+              date
+            ] &&
+            typeof allResultData[
+              date
+            ] ===
+              "object"
+          )
+            ? allResultData[
+                date
+              ]
+            : {},
+
+        updated_at:
+          new Date()
+            .toISOString()
+
+      })
+    );
+
+
+  const button =
+    document.getElementById(
+      "cloudMigrationButton"
+    );
+
+
+  if (
+    button
+  ) {
+
+    button.disabled =
+      true;
+
+    button.textContent =
+      "クラウドへ移行中...";
+
+  }
+
+
+  try {
+
+    const {
+      error
+    } =
+      await supabaseClient
+        .from(
+          "lifelog_days"
+        )
+        .upsert(
+          rows,
+          {
+            onConflict:
+              "user_id,date"
+          }
+        );
+
+
+    if (
+      error
+    ) {
+
+      throw error;
+
+    }
+
+
+    alert(
+      `${dateKeys.length}日分のLifeLogデータをクラウドへ移行しました。\n\nAndroidのローカルデータはそのまま残っています。`
+    );
+
+
+    if (
+      button
+    ) {
+
+      button.textContent =
+        "クラウド移行済み";
+
+    }
+
+  } catch (
+    error
+  ) {
+
+    console.error(
+      "クラウド移行エラー:",
+      error
+    );
+
+
+    alert(
+      "クラウドへの移行に失敗しました。\n\nローカルデータは変更されていません。"
+    );
+
+
+    if (
+      button
+    ) {
+
+      button.disabled =
+        false;
+
+      button.textContent =
+        "この端末のデータをクラウドへ移行";
+
+    }
+
+  }
+
+}
+
+
+
+// --------------------------------
+// クラウド移行ボタン
+// --------------------------------
+
+const cloudMigrationButton =
+  document.getElementById(
+    "cloudMigrationButton"
+  );
+
+
+cloudMigrationButton
+  ?.addEventListener(
+    "click",
+    () => {
+
+      migrateLocalDataToCloud();
+
+    }
+  );
+
+// --------------------------------
+// ログイン状態変化
+// --------------------------------
+
+supabaseClient.auth
+  .onAuthStateChange(
+    (
+      event,
+      session
+    ) => {
+
+      setAuthView(
+        session?.user ||
+        null
+      );
+
+    }
+  );
+
+
+initializeAuth();
+
+// --------------------------------
 // 最初の表示
 // --------------------------------
 
