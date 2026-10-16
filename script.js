@@ -6666,7 +6666,7 @@ async function uploadPhotoToCloud(
             "image/jpeg",
 
           cacheControl:
-            "3600",
+            "0",
 
           upsert:
             true
@@ -6756,20 +6756,87 @@ async function downloadPhotoFromCloud(
 
 
   const {
-    data,
-    error
+    data: signedData,
+    error: signedError
   } =
     await supabaseClient
       .storage
       .from(
         PHOTO_BUCKET_NAME
       )
-      .download(
-        path
+      .createSignedUrl(
+        path,
+        60
       );
 
 
   if (
+    signedError ||
+    !signedData?.signedUrl
+  ) {
+
+    console.error(
+      `写真URL取得エラー (${dateKey}):`,
+      signedError
+    );
+
+    return false;
+
+  }
+
+
+  try {
+
+    const separator =
+      signedData.signedUrl.includes("?")
+        ? "&"
+        : "?";
+
+
+    const response =
+      await fetch(
+        `${signedData.signedUrl}${separator}v=${Date.now()}`,
+        {
+          cache:
+            "no-store"
+        }
+      );
+
+
+    if (
+      !response.ok
+    ) {
+
+      throw new Error(
+        `HTTP ${response.status}`
+      );
+
+    }
+
+
+    const blob =
+      await response.blob();
+
+
+    await saveDailyPhoto(
+      blob,
+      dateKey
+    );
+
+
+    cloudPhotoDownloadedDates.add(
+      dateKey
+    );
+
+
+    console.log(
+      `写真をSupabaseから更新: ${dateKey}`
+    );
+
+
+    return true;
+
+  } catch (
     error
   ) {
 
@@ -6782,22 +6849,7 @@ async function downloadPhotoFromCloud(
 
   }
 
-
-  await saveDailyPhoto(
-    data,
-    dateKey
-  );
-
-
-  cloudPhotoDownloadedDates.add(
-    dateKey
-  );
-
-
-  return true;
-
 }
-
 
 // --------------------------------
 // 写真削除
