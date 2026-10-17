@@ -3245,3 +3245,467 @@ body.schedule-reordering {
 
   line-height: 1.6;
 }
+
+/* ==================================================
+   写真・一言 一覧
+================================================== */
+
+
+/* --------------------------------
+   下部タブを3列に
+-------------------------------- */
+
+.bottom-tabs {
+  grid-template-columns:
+    repeat(
+      3,
+      1fr
+    );
+}
+
+
+/* --------------------------------
+   一覧タブ
+-------------------------------- */
+
+#memoryTabPanel {
+  display: none;
+}
+
+
+#memoryTabPanel.active {
+  display: block;
+}
+
+
+/* --------------------------------
+   見出し
+-------------------------------- */
+
+.memory-header {
+  margin-bottom: 18px;
+
+  padding:
+    4px
+    2px;
+}
+
+
+.memory-header h2 {
+  margin:
+    0
+    0
+    5px;
+
+  color: #ffffff;
+
+  font-size: 21px;
+  font-weight: 700;
+
+  letter-spacing: -0.4px;
+}
+
+
+.memory-header p {
+  margin: 0;
+
+  color: #737b88;
+
+  font-size: 13px;
+}
+
+
+/* --------------------------------
+   一覧本体
+-------------------------------- */
+
+.memory-list {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 18px;
+}
+
+
+/* --------------------------------
+   1日分
+-------------------------------- */
+
+.memory-entry {
+  overflow: hidden;
+
+  padding: 18px;
+
+  background: #171a20;
+
+  border:
+    1px solid
+    #242830;
+
+  border-radius: 22px;
+
+  box-shadow:
+    0
+    12px
+    35px
+    rgba(
+      0,
+      0,
+      0,
+      0.15
+    );
+}
+
+
+/* --------------------------------
+   日付
+-------------------------------- */
+
+.memory-date {
+  margin:
+    0
+    0
+    13px;
+
+  color: #a9b0bc;
+
+  font-size: 13px;
+  font-weight: 650;
+}
+
+
+/* --------------------------------
+   写真
+-------------------------------- */
+
+.memory-photo-wrapper {
+  overflow: hidden;
+
+  width: 100%;
+
+  background: #111318;
+
+  border:
+    1px solid
+    #262b34;
+
+  border-radius: 14px;
+}
+
+
+.memory-photo {
+  display: block;
+
+  width: 100%;
+  max-height: 520px;
+
+  object-fit: contain;
+}
+
+
+/* --------------------------------
+   一言
+-------------------------------- */
+
+.memory-note {
+  margin:
+    13px
+    2px
+    0;
+
+  color: #f0f2f5;
+
+  font-size: 15px;
+
+  line-height: 1.7;
+
+  white-space: pre-wrap;
+
+  overflow-wrap: anywhere;
+}
+
+
+.memory-entry
+.memory-date
++ .memory-note {
+  margin-top: 0;
+}
+
+
+/* --------------------------------
+   空 / 読み込み
+-------------------------------- */
+
+.memory-empty,
+.memory-loading {
+  margin: 0;
+
+  padding: 36px 12px;
+
+  text-align: center;
+
+  color: #737b88;
+
+  font-size: 13px;
+}
+
+
+/* --------------------------------
+   スマホ
+-------------------------------- */
+
+@media (
+  max-width: 520px
+) {
+
+  .memory-list {
+    gap: 14px;
+  }
+
+
+  .memory-entry {
+    padding: 14px;
+
+    border-radius: 19px;
+  }
+
+
+  .memory-photo {
+    max-height: 440px;
+  }
+
+
+  .memory-note {
+    font-size: 14px;
+  }
+
+}
+/* ==================================================
+   写真・一言 期間フィルター
+================================================== */
+
+.memory-title-area {
+  display: flex;
+
+  align-items: flex-start;
+  justify-content: space-between;
+
+  gap: 16px;
+}
+
+
+.memory-title-area h2 {
+  margin:
+    0
+    0
+    5px;
+}
+
+
+.memory-title-area p {
+  margin: 0;
+}
+
+
+/* --------------------------------
+   月 / 年 切り替え
+-------------------------------- */
+
+.memory-period-mode {
+  display: flex;
+
+  flex-shrink: 0;
+
+  padding: 3px;
+
+  background: #181b21;
+
+  border:
+    1px solid
+    #242830;
+
+  border-radius: 11px;
+}
+
+
+.memory-period-mode-button {
+  min-width: 42px;
+
+  padding:
+    7px
+    10px;
+
+  background: transparent;
+
+  border: none;
+  border-radius: 8px;
+
+  color: #737b88;
+
+  font-size: 12px;
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+
+
+.memory-period-mode-button.active {
+  background: #292e38;
+
+  color: #ffffff;
+}
+
+
+/* --------------------------------
+   期間移動
+-------------------------------- */
+
+.memory-period-navigation {
+  display: grid;
+
+  grid-template-columns:
+    42px
+    auto
+    minmax(0, 1fr)
+    42px;
+
+  align-items: center;
+
+  gap: 8px;
+
+  margin-top: 18px;
+
+  padding: 5px;
+
+  background: #171a20;
+
+  border:
+    1px solid
+    #242830;
+
+  border-radius: 14px;
+}
+
+
+.memory-period-button {
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  width: 42px;
+  height: 40px;
+
+  padding: 0;
+
+  background: transparent;
+
+  border: none;
+  border-radius: 10px;
+
+  color: #a5abb6;
+
+  font-size: 16px;
+
+  cursor: pointer;
+}
+
+
+.memory-period-button:hover {
+  background: #242832;
+
+  color: #ffffff;
+}
+
+
+.memory-period-current {
+  min-height: 36px;
+
+  padding:
+    0
+    10px;
+
+  background: #20242c;
+
+  border: none;
+  border-radius: 9px;
+
+  color: #aeb4c0;
+
+  font-size: 12px;
+  font-weight: 600;
+
+  cursor: pointer;
+}
+
+
+.memory-period-current:hover {
+  background: #292e38;
+
+  color: #ffffff;
+}
+
+
+.memory-period-label {
+  min-width: 0;
+
+  text-align: center;
+
+  color: #ffffff;
+
+  font-size: 15px;
+  font-weight: 650;
+
+  font-variant-numeric:
+    tabular-nums;
+}
+
+
+/* --------------------------------
+   スマホ
+-------------------------------- */
+
+@media (
+  max-width: 520px
+) {
+
+  .memory-title-area {
+    gap: 10px;
+  }
+
+
+  .memory-period-navigation {
+    grid-template-columns:
+      38px
+      auto
+      minmax(0, 1fr)
+      38px;
+
+    gap: 5px;
+  }
+
+
+  .memory-period-button {
+    width: 38px;
+  }
+
+
+  .memory-period-current {
+    padding:
+      0
+      8px;
+
+    font-size: 11px;
+  }
+
+
+  .memory-period-label {
+    font-size: 14px;
+  }
+
+}

@@ -856,6 +856,106 @@
 
     </div>
 
+        <!-- ================================
+         写真・一言 一覧タブ
+    ================================= -->
+
+    <div
+      id="memoryTabPanel"
+      class="tab-panel"
+    >
+
+      
+    <section class="memory-header">
+
+ 
+      <div class="memory-title-area">
+
+        <div>
+
+          <h2>
+            写真と一言
+          </h2>
+
+          <p>
+            日々の記録を振り返る 
+          </p>
+
+        </div>
+  
+        <div class="memory-period-mode">
+          <button
+          id="memoryMonthModeButton"  
+          class="memory-period-mode-button active"
+          type="button"
+          >
+          月
+
+        </button>
+  
+        <button
+        id="memoryYearModeButton"
+        class="memory-period-mode-button"
+        type="button"    
+        >   
+        年  
+      </button>
+    
+    </div>
+
+  </div>
+
+
+  <div class="memory-period-navigation">
+  
+    <button 
+    id="memoryPrevPeriodButton" 
+    class="memory-period-button" 
+    type="button" 
+    aria-label="前の期間"  
+    >  
+    ←
+   </button>
+  
+  <button
+  id="memoryCurrentPeriodButton"
+  class="memory-period-current"
+  type="button"
+  >
+  今月  
+</button>
+
+<strong
+id="memoryPeriodLabel"
+class="memory-period-label"
+>
+-
+</strong>
+
+<button
+
+id="memoryNextPeriodButton"
+
+class="memory-period-button"
+
+type="button"
+
+aria-label="次の期間"
+>
+→
+</button>
+
+
+</div>
+
+</section>
+
+<div
+id="memoryList"
+class="memory-list"
+></div>
+</div>
+
 
   </main>
 
@@ -890,6 +990,15 @@
       実績
     </button>
 
+    <button
+      id="memoryTabButton"
+      class="bottom-tab"
+      type="button"
+      >
+      一覧
+    </button>
+
+
 
   </nav>
 
@@ -910,22 +1019,25 @@
 
 
 
-  <!-- ================================
-       予定 / 実績 タブ切り替え
+    <!-- ================================
+       メインタブ切り替え
   ================================= -->
 
   <script>
-
 
     const scheduleTabButton =
       document.getElementById(
         "scheduleTabButton"
       );
 
-
     const resultTabButton =
       document.getElementById(
         "resultTabButton"
+      );
+
+    const memoryTabButton =
+      document.getElementById(
+        "memoryTabButton"
       );
 
 
@@ -934,57 +1046,79 @@
         "scheduleTabPanel"
       );
 
-
     const resultTabPanel =
       document.getElementById(
         "resultTabPanel"
       );
 
+    const memoryTabPanel =
+      document.getElementById(
+        "memoryTabPanel"
+      );
 
 
     function switchMainTab(
       tab
     ) {
 
-
-      const isSchedule =
-        tab === "schedule";
-
-
-      scheduleTabPanel
-        .classList.toggle(
-          "active",
-          isSchedule
-        );
-
-
-      resultTabPanel
-        .classList.toggle(
-          "active",
-          !isSchedule
-        );
-
-
-      scheduleTabButton
-        .classList.toggle(
-          "active",
-          isSchedule
-        );
+      const tabs = [
+        {
+          name: "schedule",
+          button: scheduleTabButton,
+          panel: scheduleTabPanel
+        },
+        {
+          name: "result",
+          button: resultTabButton,
+          panel: resultTabPanel
+        },
+        {
+          name: "memory",
+          button: memoryTabButton,
+          panel: memoryTabPanel
+        }
+      ];
 
 
-      resultTabButton
-        .classList.toggle(
-          "active",
-          !isSchedule
-        );
+      tabs.forEach(
+        item => {
 
+          const active =
+            item.name === tab;
+
+
+          item.panel
+            ?.classList.toggle(
+              "active",
+              active
+            );
+
+
+          item.button
+            ?.classList.toggle(
+              "active",
+              active
+            );
+
+        }
+      );
+
+
+      if (
+        tab === "memory" &&
+        typeof renderMemoryList ===
+          "function"
+      ) {
+
+        void renderMemoryList();
+
+      }
 
     }
 
 
-
     scheduleTabButton
-      .addEventListener(
+      ?.addEventListener(
         "click",
         () => {
 
@@ -996,9 +1130,8 @@
       );
 
 
-
     resultTabButton
-      .addEventListener(
+      ?.addEventListener(
         "click",
         () => {
 
@@ -1010,8 +1143,19 @@
       );
 
 
-  </script>
+    memoryTabButton
+      ?.addEventListener(
+        "click",
+        () => {
 
+          switchMainTab(
+            "memory"
+          );
+
+        }
+      );
+
+  </script>
 
 
 

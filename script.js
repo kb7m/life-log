@@ -7868,6 +7868,851 @@ async function initializeCloudPhotos() {
 
 }
 
+// --------------------------------
+// 写真・一言 一覧
+// --------------------------------
+
+let memoryPhotoUrls =
+  [];
+
+
+let memoryFilterMode =
+  "month";
+
+
+const memoryInitialDate =
+  dateKeyToDate(
+    selectedDateKey
+  );
+
+
+let memoryFilterYear =
+  memoryInitialDate
+    .getFullYear();
+
+
+let memoryFilterMonth =
+  memoryInitialDate
+    .getMonth();
+
+
+// --------------------------------
+// 写真URLを解放
+// --------------------------------
+
+function clearMemoryPhotoUrls() {
+
+  memoryPhotoUrls.forEach(
+    url => {
+
+      URL.revokeObjectURL(
+        url
+      );
+
+    }
+  );
+
+
+  memoryPhotoUrls =
+    [];
+
+}
+
+
+// --------------------------------
+// 一覧の日付表示
+// --------------------------------
+
+function formatMemoryDate(
+  dateKey
+) {
+
+  const date =
+    dateKeyToDate(
+      dateKey
+    );
+
+
+  const weekdays = [
+    "日",
+    "月",
+    "火",
+    "水",
+    "木",
+    "金",
+    "土"
+  ];
+
+
+  return (
+    `${date.getMonth() + 1}月` +
+    `${date.getDate()}日` +
+    `（${weekdays[date.getDay()]}）`
+  );
+
+}
+
+
+// --------------------------------
+// 現在の期間表示
+// --------------------------------
+
+function updateMemoryPeriodControls() {
+
+  const monthButton =
+    document.getElementById(
+      "memoryMonthModeButton"
+    );
+
+  const yearButton =
+    document.getElementById(
+      "memoryYearModeButton"
+    );
+
+  const label =
+    document.getElementById(
+      "memoryPeriodLabel"
+    );
+
+  const currentButton =
+    document.getElementById(
+      "memoryCurrentPeriodButton"
+    );
+
+
+  monthButton
+    ?.classList.toggle(
+      "active",
+      memoryFilterMode ===
+        "month"
+    );
+
+
+  yearButton
+    ?.classList.toggle(
+      "active",
+      memoryFilterMode ===
+        "year"
+    );
+
+
+  if (
+    label
+  ) {
+
+    if (
+      memoryFilterMode ===
+      "month"
+    ) {
+
+      label.textContent =
+        `${memoryFilterYear}年${memoryFilterMonth + 1}月`;
+
+    } else {
+
+      label.textContent =
+        `${memoryFilterYear}年`;
+
+    }
+
+  }
+
+
+  if (
+    currentButton
+  ) {
+
+    currentButton.textContent =
+      memoryFilterMode ===
+        "month"
+        ? "今月"
+        : "今年";
+
+  }
+
+}
+
+
+// --------------------------------
+// 指定日が現在の絞り込み対象か
+// --------------------------------
+
+function isMemoryDateInPeriod(
+  dateKey
+) {
+
+  const date =
+    dateKeyToDate(
+      dateKey
+    );
+
+
+  if (
+    date.getFullYear() !==
+    memoryFilterYear
+  ) {
+
+    return false;
+
+  }
+
+
+  if (
+    memoryFilterMode ===
+    "year"
+  ) {
+
+    return true;
+
+  }
+
+
+  return (
+    date.getMonth() ===
+    memoryFilterMonth
+  );
+
+}
+
+
+// --------------------------------
+// 前 / 次の期間へ
+// --------------------------------
+
+async function changeMemoryPeriod(
+  amount
+) {
+
+  if (
+    memoryFilterMode ===
+    "year"
+  ) {
+
+    memoryFilterYear +=
+      amount;
+
+  } else {
+
+    const date =
+      new Date(
+        memoryFilterYear,
+        memoryFilterMonth +
+          amount,
+        1
+      );
+
+
+    memoryFilterYear =
+      date.getFullYear();
+
+    memoryFilterMonth =
+      date.getMonth();
+
+  }
+
+
+  updateMemoryPeriodControls();
+
+  await renderMemoryList();
+
+}
+
+
+// --------------------------------
+// 今月 / 今年へ戻る
+// --------------------------------
+
+async function resetMemoryPeriod() {
+
+  const today =
+    dateKeyToDate(
+      getLifeLogDateKey()
+    );
+
+
+  memoryFilterYear =
+    today.getFullYear();
+
+  memoryFilterMonth =
+    today.getMonth();
+
+
+  updateMemoryPeriodControls();
+
+  await renderMemoryList();
+
+}
+
+
+// --------------------------------
+// 月 / 年 モード切り替え
+// --------------------------------
+
+async function setMemoryFilterMode(
+  mode
+) {
+
+  if (
+    mode !== "month" &&
+    mode !== "year"
+  ) {
+
+    return;
+
+  }
+
+
+  memoryFilterMode =
+    mode;
+
+
+  updateMemoryPeriodControls();
+
+  await renderMemoryList();
+
+}
+
+
+// --------------------------------
+// 一覧描画
+// --------------------------------
+
+async function renderMemoryList() {
+
+  const container =
+    document.getElementById(
+      "memoryList"
+    );
+
+
+  if (
+    !container
+  ) {
+
+    return;
+
+  }
+
+
+  updateMemoryPeriodControls();
+
+  clearMemoryPhotoUrls();
+
+
+  container.innerHTML = `
+    <p class="memory-loading">
+      一覧を読み込み中...
+    </p>
+  `;
+
+
+  try {
+
+    // ------------------------------
+    // クラウド写真一覧を取得
+    // ------------------------------
+
+    if (
+      !photoSyncReady
+    ) {
+
+      await loadCloudPhotoIndex();
+
+    }
+
+
+    // ------------------------------
+    // ローカル写真を取得
+    // ------------------------------
+
+    const localPhotos =
+      await getAllDailyPhotos();
+
+
+    const localPhotoMap =
+      new Map();
+
+
+    localPhotos.forEach(
+      photo => {
+
+        if (
+          /^\d{4}-\d{2}-\d{2}$/.test(
+            String(
+              photo.date ||
+              ""
+            )
+          ) &&
+          photo.image
+        ) {
+
+          localPhotoMap.set(
+            photo.date,
+            photo
+          );
+
+        }
+
+      }
+    );
+
+
+    // ------------------------------
+    // 写真か一言が存在する日付
+    // ------------------------------
+
+    const dateKeys =
+      new Set();
+
+
+    Object.entries(
+      allResultData
+    )
+      .forEach(
+        ([
+          dateKey,
+          result
+        ]) => {
+
+          if (
+            !/^\d{4}-\d{2}-\d{2}$/.test(
+              dateKey
+            )
+          ) {
+
+            return;
+
+          }
+
+
+          const note =
+            String(
+              result?.dailyNote ||
+              ""
+            ).trim();
+
+
+          if (
+            note !== ""
+          ) {
+
+            dateKeys.add(
+              dateKey
+            );
+
+          }
+
+        }
+      );
+
+
+    localPhotoMap
+      .forEach(
+        (
+          photo,
+          dateKey
+        ) => {
+
+          dateKeys.add(
+            dateKey
+          );
+
+        }
+      );
+
+
+    cloudPhotoDates
+      .forEach(
+        dateKey => {
+
+          dateKeys.add(
+            dateKey
+          );
+
+        }
+      );
+
+
+    // ------------------------------
+    // 月 / 年で絞り込み
+    // ------------------------------
+
+    const sortedDates =
+      [
+        ...dateKeys
+      ]
+        .filter(
+          dateKey =>
+            isMemoryDateInPeriod(
+              dateKey
+            )
+        )
+        .sort(
+          (
+            a,
+            b
+          ) =>
+            b.localeCompare(
+              a
+            )
+        );
+
+
+    // ------------------------------
+    // 対象なし
+    // ------------------------------
+
+    if (
+      sortedDates.length ===
+      0
+    ) {
+
+      const periodText =
+        memoryFilterMode ===
+          "month"
+          ? `${memoryFilterYear}年${memoryFilterMonth + 1}月`
+          : `${memoryFilterYear}年`;
+
+
+      container.innerHTML = `
+        <p class="memory-empty">
+          ${periodText}には写真や一言がありません
+        </p>
+      `;
+
+      return;
+
+    }
+
+
+    container.innerHTML =
+      "";
+
+
+    // ------------------------------
+    // 日付ごとに表示
+    // ------------------------------
+
+    for (
+      const dateKey of
+      sortedDates
+    ) {
+
+      const result =
+        allResultData[
+          dateKey
+        ];
+
+
+      const note =
+        String(
+          result?.dailyNote ||
+          ""
+        ).trim();
+
+
+      let photo =
+        localPhotoMap.get(
+          dateKey
+        ) ||
+        null;
+
+
+      // ----------------------------
+      // クラウド写真がある場合
+      // ----------------------------
+
+      if (
+        photoSyncReady &&
+        cloudPhotoDates.has(
+          dateKey
+        ) &&
+        !cloudPhotoDownloadedDates.has(
+          dateKey
+        )
+      ) {
+
+        const downloaded =
+          await downloadPhotoFromCloud(
+            dateKey
+          );
+
+
+        if (
+          downloaded
+        ) {
+
+          photo =
+            await getDailyPhoto(
+              dateKey
+            );
+
+        }
+
+      }
+
+
+      // ----------------------------
+      // 写真も一言もないなら除外
+      // ----------------------------
+
+      if (
+        !photo &&
+        note === ""
+      ) {
+
+        continue;
+
+      }
+
+
+      const entry =
+        document.createElement(
+          "article"
+        );
+
+
+      entry.className =
+        "memory-entry";
+
+
+      // ----------------------------
+      // 日付
+      // ----------------------------
+
+      const dateElement =
+        document.createElement(
+          "p"
+        );
+
+
+      dateElement.className =
+        "memory-date";
+
+
+      dateElement.textContent =
+        formatMemoryDate(
+          dateKey
+        );
+
+
+      entry.appendChild(
+        dateElement
+      );
+
+
+      // ----------------------------
+      // 写真
+      // ----------------------------
+
+      if (
+        photo?.image
+      ) {
+
+        const wrapper =
+          document.createElement(
+            "div"
+          );
+
+
+        wrapper.className =
+          "memory-photo-wrapper";
+
+
+        const image =
+          document.createElement(
+            "img"
+          );
+
+
+        image.className =
+          "memory-photo";
+
+
+        image.alt =
+          `${dateKey} の写真`;
+
+
+        const photoUrl =
+          URL.createObjectURL(
+            photo.image
+          );
+
+
+        memoryPhotoUrls.push(
+          photoUrl
+        );
+
+
+        image.src =
+          photoUrl;
+
+
+        wrapper.appendChild(
+          image
+        );
+
+
+        entry.appendChild(
+          wrapper
+        );
+
+      }
+
+
+      // ----------------------------
+      // 一言
+      // ----------------------------
+
+      if (
+        note !== ""
+      ) {
+
+        const noteElement =
+          document.createElement(
+            "p"
+          );
+
+
+        noteElement.className =
+          "memory-note";
+
+
+        noteElement.textContent =
+          note;
+
+
+        entry.appendChild(
+          noteElement
+        );
+
+      }
+
+
+      container.appendChild(
+        entry
+      );
+
+    }
+
+
+    if (
+      container.children.length ===
+      0
+    ) {
+
+      container.innerHTML = `
+        <p class="memory-empty">
+          この期間には写真や一言がありません
+        </p>
+      `;
+
+    }
+
+  } catch (
+    error
+  ) {
+
+    console.error(
+      "写真・一言一覧の表示に失敗しました:",
+      error
+    );
+
+
+    container.innerHTML = `
+      <p class="memory-empty">
+        一覧を読み込めませんでした
+      </p>
+    `;
+
+  }
+
+}
+
+
+// --------------------------------
+// 一覧期間操作
+// --------------------------------
+
+document
+  .getElementById(
+    "memoryMonthModeButton"
+  )
+  ?.addEventListener(
+    "click",
+    () => {
+
+      void setMemoryFilterMode(
+        "month"
+      );
+
+    }
+  );
+
+
+document
+  .getElementById(
+    "memoryYearModeButton"
+  )
+  ?.addEventListener(
+    "click",
+    () => {
+
+      void setMemoryFilterMode(
+        "year"
+      );
+
+    }
+  );
+
+
+document
+  .getElementById(
+    "memoryPrevPeriodButton"
+  )
+  ?.addEventListener(
+    "click",
+    () => {
+
+      void changeMemoryPeriod(
+        -1
+      );
+
+    }
+  );
+
+
+document
+  .getElementById(
+    "memoryNextPeriodButton"
+  )
+  ?.addEventListener(
+    "click",
+    () => {
+
+      void changeMemoryPeriod(
+        1
+      );
+
+    }
+  );
+
+
+document
+  .getElementById(
+    "memoryCurrentPeriodButton"
+  )
+  ?.addEventListener(
+    "click",
+    () => {
+
+      void resetMemoryPeriod();
+
+    }
+  );
+
+
+updateMemoryPeriodControls();
 
 // --------------------------------
 // 今日の写真
