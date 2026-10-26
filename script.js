@@ -1818,6 +1818,187 @@ function getCurrentTime() {
 }
 
 // --------------------------------
+// ホーム画面 クイック記録
+// --------------------------------
+
+async function recordQuickLifeEvent(
+  type
+) {
+
+  if (
+    type !== "wake" &&
+    type !== "sleep"
+  ) {
+
+    return false;
+
+  }
+
+
+  const {
+    data
+  } =
+    await supabaseClient.auth
+      .getSession();
+
+
+  const user =
+    data.session?.user;
+
+
+  if (
+    !user
+  ) {
+
+    return false;
+
+  }
+
+
+  const dateKey =
+    getLifeLogDateKey();
+
+
+  selectedDateKey =
+    dateKey;
+
+
+  schedules =
+    loadSchedulesForDate(
+      dateKey
+    );
+
+
+  dailyResults =
+    loadResultsForDate(
+      dateKey
+    );
+
+
+  const time =
+    getCurrentTime();
+
+
+  const scheduleName =
+    type === "wake"
+      ? "起床"
+      : "就寝";
+
+
+  const schedule =
+    schedules.find(
+      item =>
+        item.name ===
+        scheduleName
+    );
+
+
+  if (
+    schedule
+  ) {
+
+    schedule.completed =
+      true;
+
+    schedule.actualTime =
+      time;
+
+  }
+
+
+  if (
+    type === "wake"
+  ) {
+
+    dailyResults.wakeTime =
+      time;
+
+  } else {
+
+    dailyResults.sleepTime =
+      time;
+
+  }
+
+
+  saveSchedules();
+
+  saveDailyResults();
+
+
+  // クラウドへ即保存
+  if (
+    cloudSyncReady
+  ) {
+
+    await flushCloudSave(
+      dateKey
+    );
+
+  }
+
+
+  renderSchedules();
+
+
+  return true;
+
+}
+
+async function handleQuickActionFromUrl() {
+
+  const params =
+    new URLSearchParams(
+      window.location.search
+    );
+
+
+  const action =
+    params.get(
+      "quick"
+    );
+
+
+  if (
+    action !== "wake" &&
+    action !== "sleep"
+  ) {
+
+    return;
+
+  }
+
+
+  const success =
+    await recordQuickLifeEvent(
+      action
+    );
+
+
+  if (
+    !success
+  ) {
+
+    return;
+
+  }
+
+
+  // リロードで二重登録されないようURLから消す
+  const cleanUrl =
+    window.location.pathname +
+    window.location.hash;
+
+
+  window.history.replaceState(
+    {},
+    "",
+    cleanUrl
+  );
+
+}
+
+// --------------------------------
 // 予定を1日の流れ順に並べる
 // --------------------------------
 
@@ -9020,7 +9201,11 @@ async function loginWithEmail() {
     data.user
   );
 
+  
+
   await initializeCloudForUser();
+
+  await handleQuickActionFromUrl();
 
 }
 
@@ -9397,6 +9582,9 @@ async function initializeAuth() {
   ) {
 
     await initializeCloudForUser();
+
+    await handleQuickActionFromUrl();
+
 
   }
 
