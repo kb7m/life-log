@@ -3709,3 +3709,33 @@ body.schedule-reordering {
   }
 
 }
+
+/* =================================
+   起床・就寝
+   予定時刻なし
+================================= */
+
+.schedule-item.wake-sleep-item {
+  grid-template-columns:
+    28px
+    38px
+    minmax(0, 1fr)
+    56px
+    34px;
+}
+
+
+@media (
+  max-width: 520px
+) {
+
+  .schedule-item.wake-sleep-item {
+    grid-template-columns:
+      24px
+      34px
+      minmax(0, 1fr)
+      45px
+      30px;
+  }
+
+}

@@ -2111,6 +2111,59 @@ let editingScheduleId =
 let draggingScheduleId =
   null;
 
+
+// --------------------------------
+// 起床・就寝 判定
+// --------------------------------
+
+function isWakeSleepSchedule(
+  schedule
+) {
+
+  return (
+    schedule?.name === "起床" ||
+    schedule?.name === "就寝"
+  );
+
+}
+
+
+// --------------------------------
+// 実績時刻 → 起床・就寝予定へ同期
+// --------------------------------
+
+function syncWakeSleepScheduleState(
+  schedule
+) {
+
+  if (
+    !isWakeSleepSchedule(
+      schedule
+    )
+  ) {
+
+    return;
+
+  }
+
+
+  const time =
+    schedule.name === "起床"
+      ? dailyResults.wakeTime
+      : dailyResults.sleepTime;
+
+
+  schedule.completed =
+    Boolean(
+      time
+    );
+
+
+  schedule.actualTime =
+    time ||
+    null;
+
+}
 // --------------------------------
 // 予定表示
 // --------------------------------
@@ -2139,8 +2192,29 @@ function renderSchedules() {
           "div"
         );
 
-      item.className =
-        "schedule-item";
+        
+    
+        const isWakeSleep =       
+        isWakeSleepSchedule(   
+          schedule 
+        );
+
+        if (
+          isWakeSleep
+        ) {
+          syncWakeSleepScheduleState(
+            schedule
+          );     
+        }
+
+            
+        item.className =
+        
+        isWakeSleep
+         
+        ? "schedule-item wake-sleep-item"
+        
+        : "schedule-item";
 
       item.dataset.id =
         String(
@@ -2217,11 +2291,18 @@ function renderSchedules() {
           }
         </button>
 
-        <span
-          class="plan-time"
-        >
-          ${schedule.time}
-        </span>
+              
+        ${     
+          isWakeSleep        
+          ? ""  
+          : `  
+          <span 
+          class="plan-time"   
+          >    
+          ${schedule.time}   
+          </span>    
+          ` 
+        }
 
         <span
           class="task-name"
@@ -2243,7 +2324,8 @@ function renderSchedules() {
         </span>
 
         ${
-          canEdit
+          canEdit &&
+          !isWakeSleep
 
             ? `
               <button
@@ -2264,8 +2346,11 @@ function renderSchedules() {
             `
         }
 
+        
         ${
-          isEditing
+          isEditing &&
+          !isWakeSleep
+          
 
             ? `
               <div
@@ -2468,20 +2553,104 @@ function toggleSchedule(
 
   }
 
+
   const schedule =
     schedules.find(
       item =>
         item.id === id
     );
 
-  if (!schedule) {
+
+  if (
+    !schedule
+  ) {
 
     return;
 
   }
 
+
+  // ------------------------------
+  // 起床・就寝
+  // ------------------------------
+
+  if (
+    isWakeSleepSchedule(
+      schedule
+    )
+  ) {
+
+    const resultKey =
+      schedule.name === "起床"
+        ? "wakeTime"
+        : "sleepTime";
+
+
+    const currentValue =
+      dailyResults[
+        resultKey
+      ];
+
+
+    // すでに記録済みなら解除
+    if (
+      currentValue
+    ) {
+
+      dailyResults[
+        resultKey
+      ] =
+        "";
+
+
+      schedule.completed =
+        false;
+
+
+      schedule.actualTime =
+        null;
+
+    } else {
+
+      // 押した瞬間の時刻を記録
+      const time =
+        getCurrentTime();
+
+
+      dailyResults[
+        resultKey
+      ] =
+        time;
+
+
+      schedule.completed =
+        true;
+
+
+      schedule.actualTime =
+        time;
+
+    }
+
+
+    saveDailyResults();
+
+    saveSchedules();
+
+    renderSchedules();
+
+    return;
+
+  }
+
+
+  // ------------------------------
+  // 通常予定
+  // ------------------------------
+
   schedule.completed =
     !schedule.completed;
+
 
   if (
     schedule.completed
@@ -2490,40 +2659,13 @@ function toggleSchedule(
     schedule.actualTime =
       getCurrentTime();
 
-    if (
-      schedule.name ===
-        "起床" &&
-      dailyResults.wakeTime ===
-        ""
-    ) {
-
-      dailyResults.wakeTime =
-        schedule.actualTime;
-
-      saveDailyResults();
-
-    }
-
-    if (
-      schedule.name ===
-        "就寝" &&
-      dailyResults.sleepTime ===
-        ""
-    ) {
-
-      dailyResults.sleepTime =
-        schedule.actualTime;
-
-      saveDailyResults();
-
-    }
-
   } else {
 
     schedule.actualTime =
       null;
 
   }
+
 
   saveSchedules();
 
@@ -5330,6 +5472,48 @@ if (
 
 }
 
+/// --------------------------------
+// 起床・就寝の実績時刻を予定にも同期
+// --------------------------------
+
+function syncWakeSleepTimeFromResult(
+  scheduleName,
+  time
+) {
+
+  const schedule =
+    schedules.find(
+      item =>
+        item.name ===
+        scheduleName
+    );
+
+
+  if (
+    !schedule
+  ) {
+
+    return;
+
+  }
+
+
+  schedule.actualTime =
+    time ||
+    null;
+
+
+  schedule.completed =
+    Boolean(
+      time
+    );
+
+
+  saveSchedules();
+
+}
+
+
 // --------------------------------
 // 起床時間を直接変更
 // --------------------------------
@@ -5338,6 +5522,7 @@ const wakeTimeInput =
   document.getElementById(
     "wakeTimeInput"
   );
+
 
 if (
   wakeTimeInput
@@ -5348,15 +5533,29 @@ if (
       "change",
       event => {
 
-        dailyResults.wakeTime =
+        const time =
           event.target.value;
 
+
+        dailyResults.wakeTime =
+          time;
+
+
+        syncWakeSleepTimeFromResult(
+          "起床",
+          time
+        );
+
+
         saveDailyResults();
+
+        renderSchedules();
 
       }
     );
 
 }
+
 
 // --------------------------------
 // 就寝時間を直接変更
@@ -5367,6 +5566,7 @@ const sleepTimeInput =
     "sleepTimeInput"
   );
 
+
 if (
   sleepTimeInput
 ) {
@@ -5376,16 +5576,28 @@ if (
       "change",
       event => {
 
-        dailyResults.sleepTime =
+        const time =
           event.target.value;
 
+
+        dailyResults.sleepTime =
+          time;
+
+
+        syncWakeSleepTimeFromResult(
+          "就寝",
+          time
+        );
+
+
         saveDailyResults();
+
+        renderSchedules();
 
       }
     );
 
 }
-
 // --------------------------------
 // 実績名・時間変更
 // --------------------------------
